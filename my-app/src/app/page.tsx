@@ -4,9 +4,10 @@ import Image from "next/image";
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [messages, setMessages] = useState(['Test', 'Test2', 'Test3','Test4','Test5','Test6']);
+  const [messages, setMessages] = useState(['Test', 'Test2', 'Test3', 'Test4', 'Test5', 'Test6']);
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [emotion, setEmotion] = useState('O_O');
 
   const sendMessage = () => {
     // Send message warning
@@ -15,8 +16,28 @@ export default function Home() {
     setMessages([...messages, messageInput])
   };
 
-  const getEmotion = () => {
+  const getEmotion = async () => {
+    // POST request to python 
+    // I forgot how to write POST request exactly, let me know if it doesnt work
+    console.log('sending request');
 
+    const content = {
+      messageInput,
+      selectedImage
+    }
+
+    const res = await fetch('http://localhost:8888', {
+      method: 'POST',
+      body: JSON.stringify(content),
+      headers: {
+        'content-type': 'application/json'
+      }
+    })
+
+    console.log('res :>> ', res);
+    setEmotion('Happy')
+    // const emotion = res.body.emotion;
+    // setEmotion(emotion)
   }
 
   return (
@@ -27,24 +48,43 @@ export default function Home() {
           <div key={index} className="mb-2">{message}</div>
         ))}
       </div>
-      <input
-        type="text"
-        value={messageInput}
-        onChange={(e) => setMessageInput(e.target.value)}
-        className="border border-gray-300 p-2 rounded-lg mr-2"
-      />
-      <UploadAndDisplayImage selectedImage = {selectedImage} setSelectedImage={setSelectedImage}/>
-      <button
-        onClick={sendMessage}
-        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-      >
-        Send
-      </button>
+
+
+      <div className=" ">
+        <input
+          type="text"
+          value={messageInput}
+          onChange={(e) => setMessageInput(e.target.value)}
+          className="border border-gray-300 p-2 rounded-lg mr-2"
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Send
+        </button>
+      </div>
+
+      <div className=" ">
+        <label className=" text-emerald-500">Detected Emotion: {emotion}</label>
+        <div className="flex ">
+
+          <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+          <button
+            onClick={getEmotion}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          >
+            Get emotion
+          </button>
+        </div>
+      </div>
+
+
     </div>
   );
 }
 
-const UploadAndDisplayImage = ({selectedImage, setSelectedImage}) => {
+const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
 
   return (
     <div>
@@ -65,7 +105,7 @@ const UploadAndDisplayImage = ({selectedImage, setSelectedImage}) => {
 
       <br />
       <br />
-      
+
       <input
         type="file"
         name="myImage"
