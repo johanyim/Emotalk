@@ -22,27 +22,16 @@ export default function Home() {
     // POST request to python 
     console.log('sending request');
 
-    // const content = {
-    //   'selectedImage':selectedImage,
-    //   messageInput
-    // }
-
     const formData = new FormData();
     formData.append('image', selectedImage, 'image.jpg');
-    console.log('formData :>> ', formData);
 
     const response = await fetch('http://localhost:5000/read_emotion', {
       method: 'POST',
       body: formData,
     })
 
-    // const response = await fetch('http://localhost:5000/test')
     const res = await response.json()
-
-    console.log('res :>> ', res);
-    setEmotion('neutral')
-    // const emotion = res.body.emotion;
-    // setEmotion(emotion)
+    setEmotion(res.emotion)
   }
 
   return (
