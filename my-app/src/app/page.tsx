@@ -32,7 +32,18 @@ export default function Home() {
     //   }
     // })
 
-    const response = await fetch('http://localhost:5000/test')
+    // const response = await fetch('http://localhost:5000/test')
+    const response = await fetch('http://localhost:5000/read_emotion', {
+        method: 'POST',
+        body: content,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
     const res = await response.json()
 
     console.log('res :>> ', res);

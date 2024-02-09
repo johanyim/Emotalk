@@ -10,7 +10,7 @@ from deepface import DeepFace
 
 # @app.route('/api/emotion')
 @app.route('/read_emotion', methods=['POST'])
-def analyze_face():
+def read_emotion():
 
     # Read the image using OpenCV
     image_file = request.files['selectedImage']
@@ -45,6 +45,7 @@ def analyze_face():
 
 @app.route('/test', methods=['GET'])
 def test():
+    image_file = request.files['selectedImage']
     return  jsonify({'emotion': 'test'})
 
 def main():
