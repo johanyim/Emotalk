@@ -1,13 +1,14 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 import cv2
 from deepface import DeepFace
 
-face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-@app.route('/api/emotion')
+# @app.route('/api/emotion')
+@app.route('/read_emotion', methods=['POST'])
 def analyze_face(frame):
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
     # conver to greyscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -28,9 +29,10 @@ def analyze_face(frame):
     dominant_emotion = max(emotion, key=emotion.get)
 
     # print(emotion)
-    print(dominant_emotion)
+    # print(dominant_emotion)
 
-    return{'emotion': dominant_emotion}
+    # return{'emotion': dominant_emotion}
+    return jsonify({'emotion': dominant_emotion})
 
 
 def main():

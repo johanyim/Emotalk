@@ -1,3 +1,5 @@
-Flask
+flask
 deepface
+opencv-python
 python-dotenv
+
