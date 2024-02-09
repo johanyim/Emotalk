@@ -35,6 +35,10 @@ def read_emotion():
     # detect faces bounding box in the frame
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
+    # no faces detected just use neutral
+    if(len(faces) == 0):
+        return jsonify({'emotion': 'neutral'})
+
     # Extract the face region
     (x, y, w, h) = faces[0]
     face = frame[y:y + h, x:x + w]
@@ -46,6 +50,7 @@ def read_emotion():
     emotion = result[0].get('emotion')
 
     dominant_emotion = max(emotion, key=emotion.get)
+    print(dominant_emotion)
 
     # print(emotion)
     # print(dominant_emotion)
@@ -53,18 +58,6 @@ def read_emotion():
     # return{'emotion': dominant_emotion}
     return jsonify({'emotion': dominant_emotion})
 
-@app.route('/test', methods=['GET'])
-def test():
-    image_file = request.files['selectedImage']
-    return  jsonify({'emotion': 'test'})
-
-@app.route('/banana', methods=['POST'])
-def banana():
-    message = request.json
-    print(message, flush=True)
-    # print('message', message)
-
-    return  jsonify({'emotion': message})
 
 def main():
     app.run()
