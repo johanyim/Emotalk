@@ -34,6 +34,10 @@ export default function Home() {
       }
     })
 
+    useEffect(() => {
+        fetch("/api/emotion").then(res => res.json()).then(data => {setEmotion(data.emotion)})
+    }, [])
+
     console.log('res :>> ', res);
     setEmotion('Happy')
     // const emotion = res.body.emotion;
