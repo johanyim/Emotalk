@@ -11,6 +11,10 @@ def analyze_face(frame):
     # detect faces bounding box in the frame
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
+    # if no faces are detected
+    if len(faces) == 0:
+        return 'no face detected'
+
     # Extract the face region
     (x, y, w, h) = faces[0]
     face = frame[y:y + h, x:x + w]

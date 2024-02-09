@@ -22,7 +22,6 @@ export default function Home() {
     console.log('sending request');
 
     const content = {
-      messageInput,
       selectedImage
     }
 
@@ -34,12 +33,21 @@ export default function Home() {
       }
     })
 
-    useEffect(() => {
-        fetch("/api/emotion").then(res => res.json()).then(data => {setEmotion(data.emotion)})
-    }, [])
+    // const formData = new FormData();
+    // formData.append('image', selectedImage);  // Replace with the image file
+    //
+    // fetch('/read_emotion', {
+    //     method: 'POST',
+    //     body: formData,
+    // })
+    // .then(response => response.json())
+    // .then(data => console.log(data.emotion));
+
 
     console.log('res :>> ', res);
-    setEmotion('Happy')
+    setEmotion('neutral')
+    // setEmotion(res.emotion) # How do I extract the emotion from the resposnse variable?
+    
     // const emotion = res.body.emotion;
     // setEmotion(emotion)
   }
