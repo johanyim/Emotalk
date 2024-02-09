@@ -18,36 +18,25 @@ export default function Home() {
 
   const getEmotion = async () => {
     // POST request to python 
-    // I forgot how to write POST request exactly, let me know if it doesnt work
     console.log('sending request');
 
     const content = {
       selectedImage
     }
 
-    const res = await fetch('http://localhost:8888', {
-      method: 'POST',
-      body: JSON.stringify(content),
-      headers: {
-        'content-type': 'application/json'
-      }
-    })
-
-    // const formData = new FormData();
-    // formData.append('image', selectedImage);  // Replace with the image file
-    //
-    // fetch('/read_emotion', {
-    //     method: 'POST',
-    //     body: formData,
+    // const response = await fetch('http://localhost:5000/read_emotion', {
+    //   method: 'POST',
+    //   body: JSON.stringify(content),
+    //   headers: {
+    //     'content-type': 'application/json'
+    //   }
     // })
-    // .then(response => response.json())
-    // .then(data => console.log(data.emotion));
 
+    const response = await fetch('http://localhost:5000/test')
+    const res = await response.json()
 
     console.log('res :>> ', res);
     setEmotion('neutral')
-    // setEmotion(res.emotion) # How do I extract the emotion from the resposnse variable?
-    
     // const emotion = res.body.emotion;
     // setEmotion(emotion)
   }

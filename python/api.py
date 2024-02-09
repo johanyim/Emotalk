@@ -43,6 +43,9 @@ def analyze_face():
     # return{'emotion': dominant_emotion}
     return jsonify({'emotion': dominant_emotion})
 
+@app.route('/test', methods=['GET'])
+def test():
+    return  jsonify({'emotion': 'test'})
 
 def main():
     app.run()
