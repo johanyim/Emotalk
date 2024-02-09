@@ -17,22 +17,26 @@ export default function Home() {
   };
 
   const getEmotion = async () => {
+
+    if (!selectedImage) return
     // POST request to python 
     console.log('sending request');
 
-    const content = {
-      selectedImage
-    }
+    // const content = {
+    //   'selectedImage':selectedImage,
+    //   messageInput
+    // }
 
-    // const response = await fetch('http://localhost:5000/read_emotion', {
-    //   method: 'POST',
-    //   body: JSON.stringify(content),
-    //   headers: {
-    //     'content-type': 'application/json'
-    //   }
-    // })
+    const formData = new FormData();
+    formData.append('image', selectedImage, 'image.jpg');
+    console.log('formData :>> ', formData);
 
-    const response = await fetch('http://localhost:5000/test')
+    const response = await fetch('http://localhost:5000/read_emotion', {
+      method: 'POST',
+      body: formData,
+    })
+
+    // const response = await fetch('http://localhost:5000/test')
     const res = await response.json()
 
     console.log('res :>> ', res);

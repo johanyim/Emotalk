@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import json
+import numpy as np
 
 app = Flask(__name__)
 CORS(app) 
@@ -13,9 +15,17 @@ from deepface import DeepFace
 def analyze_face():
 
     # Read the image using OpenCV
-    image_file = request.files['selectedImage']
+    # image_file = request.json
+    # print(image_file, flush=True)
+    # image_file = image_file.selectedImage
+
+    image_file = request.files['image']
+
+    # Read the image file data
+    image_file = np.fromstring(image_file.read(), np.uint8)
+
     # decoding to cv2-compliant format
-    frame = cv2.imdecode(image_file.read(), cv2.IMREAD_COLOR)
+    frame = cv2.imdecode(image_file, cv2.IMREAD_COLOR)
 
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
@@ -46,6 +56,14 @@ def analyze_face():
 @app.route('/test', methods=['GET'])
 def test():
     return  jsonify({'emotion': 'test'})
+
+@app.route('/banana', methods=['POST'])
+def banana():
+    message = request.json
+    print(message, flush=True)
+    # print('message', message)
+
+    return  jsonify({'emotion': message})
 
 def main():
     app.run()
