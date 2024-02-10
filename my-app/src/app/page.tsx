@@ -55,42 +55,49 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 bg-gray-100 rounded-lg shadow-md ">
+    <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md ">
       <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
-      <div className="mb-4">
-        {messages.map((message, index) => (
-          <div key={index} className="mb-2">{message}</div>
-        ))}
-      </div>
+      <div className=" flex flex-col h-screen justify-between ">
 
-      <div className=" ">
-        <input
-          type="text"
-          value={messageInput}
-          onChange={(e) => setMessageInput(e.target.value)}
-          className="border border-gray-300 p-2 rounded-lg mr-2"
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Send
-        </button>
-      </div>
-
-      <div className=" mt-10">
-        <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
-        <div className="flex ">
-
-          <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-          <button
-            onClick={getEmotion}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          >
-            Get emotion
-          </button>
+        <div className=" ">
+          <div className="">
+            {messages.map((message, index) => (
+              <div key={index} className="mb-2">{message}</div>
+            ))}
+          </div>
         </div>
-      </div>
+        
+        <div className=" ">
+          <div className=" ">
+            <input
+              type="text"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              className="border border-gray-300 p-2 rounded-lg mr-2"
+            />
+            <button
+              onClick={sendMessage}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Send
+            </button>
+          </div>
+
+          <div className=" mt-10">
+            <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
+            <div className="flex ">
+
+              <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+              <button
+                onClick={getEmotion}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+              >
+                Get emotion
+              </button>
+            </div>
+          </div>
+        </div>
+      </div >
     </div >
   );
 }
