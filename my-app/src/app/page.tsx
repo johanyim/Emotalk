@@ -2,12 +2,17 @@
 
 import Image from "next/image";
 import { useEffect, useState } from 'react';
+import { Socket, io } from "socket.io-client"
 
 export default function Home() {
   const [messages, setMessages] = useState(['Test', 'Test2', 'Test3', 'Test4', 'Test5', 'Test6']);
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
+
+  useEffect(() => {
+    socketClient()
+  },[])
 
   const sendMessage = () => {
     // Send message warning
@@ -111,3 +116,23 @@ const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
     </div>
   );
 };
+
+const PORT = 3000
+function socketClient() {
+  const socket = io(`:${PORT + 1}`, { path: "/api/socket", addTrailingSlash: false })
+
+  socket.on("connect", () => {
+    console.log("Connected")
+  })
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected")
+  })
+
+  socket.on("connect_error", async err => {
+    console.log(`connect_error due to ${err.message}`)
+    await fetch("/api/socket")
+  })
+
+  return socket
+}
