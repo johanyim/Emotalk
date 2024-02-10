@@ -6,7 +6,7 @@ import { Socket, io } from "socket.io-client"
 // import socket from "./socket/socket";
 
 export default function Home() {
-  const [messages, setMessages] = useState(['Test', 'Test2', 'Test3', 'Test4', 'Test5', 'Test6']);
+  const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
@@ -16,7 +16,7 @@ export default function Home() {
   useEffect(() => {
     const socket = socketClient();
     socket.on("displayMessage", (newMessage) => {
-      setMessages(prevMessages=>[...prevMessages,newMessage])
+      setMessages(prevMessages => [...prevMessages, newMessage])
     })
     setSocketInstance(prevSocket => {
       if (prevSocket) {
@@ -63,7 +63,6 @@ export default function Home() {
         ))}
       </div>
 
-
       <div className=" ">
         <input
           type="text"
@@ -79,8 +78,8 @@ export default function Home() {
         </button>
       </div>
 
-      <div className=" ">
-        <label className=" text-emerald-500">Detected Emotion: {emotion}</label>
+      <div className=" mt-10">
+        <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
         <div className="flex ">
 
           <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
@@ -92,9 +91,7 @@ export default function Home() {
           </button>
         </div>
       </div>
-
-
-    </div>
+    </div >
   );
 }
 
