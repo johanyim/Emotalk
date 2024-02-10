@@ -55,18 +55,16 @@ export default function Home() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md ">
-      <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
-      <div className=" flex flex-col h-screen justify-between ">
-
-        <div className=" ">
+    <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
+      <div className=" ">
+          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
           <div className="">
             {messages.map((message, index) => (
               <div key={index} className="mb-2">{message}</div>
             ))}
           </div>
         </div>
-        
+
         <div className=" ">
           <div className=" ">
             <input
@@ -97,7 +95,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div >
     </div >
   );
 }
