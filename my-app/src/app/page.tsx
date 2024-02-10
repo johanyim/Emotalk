@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
+// import socket from "./socket/socket";
 
 export default function Home() {
   const [messages, setMessages] = useState(['Test', 'Test2', 'Test3', 'Test4', 'Test5', 'Test6']);
@@ -10,15 +11,29 @@ export default function Home() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
 
+  const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
+
   useEffect(() => {
-    socketClient()
-  },[])
+    const socket = socketClient();
+    socket.on("displayMessage", (newMessage) => {
+      setMessages(prevMessages=>[...prevMessages,newMessage])
+    })
+    setSocketInstance(prevSocket => {
+      if (prevSocket) {
+        prevSocket.disconnect(); // Disconnect previous socket
+      }
+      return socket;
+    });
+  }, []); // Empty dependency array to run the effect only once
+
 
   const sendMessage = () => {
     // Send message warning
-    if (messageInput === '') return
+    if (messageInput.trim() === '' || !socketInstance) return
+
+    socketInstance.emit('sendMessage', messageInput);
     setMessageInput('');
-    setMessages([...messages, messageInput])
+    // setMessages([...messages, messageInput])
   };
 
   const getEmotion = async () => {

@@ -40,6 +40,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     socket.on("disconnect", async () => {
       console.log("socket disconnect")
     })
+
+    socket.on('sendMessage', message => {
+      // console.log('Received message:', message, 'from', socket.id);
+      io.emit('displayMessage', `${socket.id}: ${message}`); // Broadcast to all clients
+    });
   })
 
   res.socket.server.io = io
