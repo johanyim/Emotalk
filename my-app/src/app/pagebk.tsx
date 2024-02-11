@@ -3,7 +3,13 @@ import Webcam from "react-webcam";
 
 import Image from "next/image";
 import { useEffect, useState } from 'react';
+<<<<<<< HEAD
+import React from 'react';
+
+=======
 import { Socket, io } from "socket.io-client"
+// import socket from "./socket/socket";
+>>>>>>> d12cf533c1dadda1d8c55b372070703e7c54c981
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -109,6 +115,42 @@ export default function Home() {
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
       <div className=" ">
+<<<<<<< HEAD
+        <input
+          type="text"
+          value={messageInput}
+          onChange={(e) => setMessageInput(e.target.value)}
+          className="border border-gray-300 p-2 rounded-lg mr-2"
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Send
+        </button>
+      </div>
+
+      <WebcamCapture/>
+
+      <div className=" ">
+        <label className=" text-emerald-500">Detected Emotion: {emotion}</label>
+        <div className="flex ">
+
+          <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+          <button
+            onClick={getEmotion}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          >
+            Get emotion
+          </button>
+=======
+          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+          <div className="">
+            {messages.map((message, index) => (
+              <div key={index} className="mb-2">{message}</div>
+            ))}
+          </div>
+>>>>>>> d12cf533c1dadda1d8c55b372070703e7c54c981
         </div>
 
         <div className=" ">
