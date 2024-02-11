@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
-import React from 'react'
 
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
@@ -62,56 +61,62 @@ export default function Home() {
         facingMode: "user"
   };
 
-    const WebcamCapture = () => {
-        const webcamRef = React.useRef(null);
-        const capture = React.useCallback(
-            async () => {
-                const imageSrc = webcamRef.current.getScreenshot();
-                if (!imageSrc) return
-                // POST request to python 
-                console.log('sending request');
+    // const WebcamCapture = () => {
+    //     const webcamRef = React.useRef(null);
+    //     const capture = React.useCallback(
+    //         async () => {
+    //             const imageSrc = webcamRef.current.getScreenshot();
+    //             if (!imageSrc) return
+    //             // POST request to python 
+    //             console.log('sending request');
 
-                // Convert base64 string to Blob
-                const blob = blobConvert(imageSrc);
+    //             // Convert base64 string to Blob
+    //             const blob = blobConvert(imageSrc);
 
-                // Create FormData object and append Blob
-                const formData = new FormData();
-                formData.append('image', blob, 'image.jpg');
+    //             // Create FormData object and append Blob
+    //             const formData = new FormData();
+    //             formData.append('image', blob, 'image.jpg');
 
-                const response = await fetch('http://localhost:5000/read_emotion', {
-                    method: 'POST',
-                    body: formData,
-                })
+    //             const response = await fetch('http://localhost:5000/read_emotion', {
+    //                 method: 'POST',
+    //                 body: formData,
+    //             })
 
-                const res = await response.json()
-                setEmotion(res.emotion)
-            },
+    //             const res = await response.json()
+    //             setEmotion(res.emotion)
+    //         },
 
-            [webcamRef]
-        );
-        return (
-            <>
-            <Webcam
-                audio={false}
-                height={180}
-                ref={webcamRef}
-                screenshotFormat="image/jpeg"
-                width={320}
-                videoConstraints={videoConstraints}
-            />
-          <button
-            onClick={capture}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          >
-            Get emotion (webcam)
-          </button>
-            </>
-        );
-    };
+    //         [webcamRef]
+    //     );
+    //     return (
+    //         <>
+    //         <Webcam
+    //             audio={false}
+    //             height={180}
+    //             ref={webcamRef}
+    //             screenshotFormat="image/jpeg"
+    //             width={320}
+    //             videoConstraints={videoConstraints}
+    //         />
+    //       <button
+    //         onClick={capture}
+    //         className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+    //       >
+    //         Get emotion (webcam)
+    //       </button>
+    //         </>
+    //     );
+    // };
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
       <div className=" ">
+          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+          <div className="">
+            {messages.map((message, index) => (
+              <div key={index} className="mb-2">{message}</div>
+            ))}
+          </div>
         </div>
 
         <div className=" ">
