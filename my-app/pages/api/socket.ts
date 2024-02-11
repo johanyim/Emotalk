@@ -65,7 +65,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     })
 
     socket.on('sendMessage', message => {
-      // console.log('Received message:', message, 'from', socket.id);
+      console.log('Received message:', message, 'from', socket.id);
       const name = socketToNameMap[socket.id]
       io.emit('displayMessage', `${name}: ${message}`); // Broadcast to all clients
     });
