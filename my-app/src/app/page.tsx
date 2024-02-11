@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
+import React from 'react'
+
 export default function Home() {
   const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState('');
@@ -27,7 +29,8 @@ export default function Home() {
   }, []); // Empty dependency array to run the effect only once
 
 
-  const sendMessage = () => {
+  const sendMessage = (e) => {
+    e.preventDefault();
     // Send message warning
     if (messageInput.trim() === '' || !socketInstance) return
 
@@ -112,7 +115,7 @@ export default function Home() {
         </div>
 
         <div className=" ">
-          <div className=" ">
+          <form className=" ">
             <input
               type="text"
               value={messageInput}
@@ -125,7 +128,7 @@ export default function Home() {
             >
               Send
             </button>
-          </div>
+          </form>
 
           <div className=" mt-10">
             <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
