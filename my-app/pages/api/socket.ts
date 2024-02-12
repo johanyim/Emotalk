@@ -58,17 +58,33 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     
     console.log("socket connect", socket.id)
 
-    _socket.emit("displayMessage", `Welcome ${socketToNameMap[socket.id] }`)
+    //Server send initial message at inital connect
+    const payload = {
+      sender: 'Server', //Change later 
+      message: `Welcome ${socketToNameMap[socket.id] }`,
+      emotion:'-'
+    }
+    _socket.emit("receiveMessage", payload)
 
+
+    //Server receive message
+    socket.on('sendMessage', ({message,emotion}) => {
+      const name = socketToNameMap[socket.id]
+      console.log(`RECEIVED MESSAGE: Sender: ${name}, message: ${message}, emotion", ${emotion}`);
+
+      const payload = {
+        sender: name, //Change later 
+        message,
+        emotion
+      }
+
+      io.emit('receiveMessage', payload); // Broadcast to all clients
+    });
+
+    //Socket disconnects
     socket.on("disconnect", async () => {
       console.log("socket disconnect")
     })
-
-    socket.on('sendMessage', message => {
-      console.log('Received message:', message, 'from', socket.id);
-      const name = socketToNameMap[socket.id]
-      io.emit('displayMessage', `${name}: ${message}`); // Broadcast to all clients
-    });
   })
 
   res.socket.server.io = io
