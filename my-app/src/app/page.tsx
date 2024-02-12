@@ -111,7 +111,7 @@ export default function Home() {
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg mr-2 w-full"
+            className={`${emotion} border border-gray-300 p-2 rounded-lg mr-2 w-full`}
           />
           <button
             onClick={sendMessage}
@@ -120,7 +120,7 @@ export default function Home() {
             Send
           </button>
         </form>
-        {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
+        <WebcamCapture setSelectedImage={setSelectedImage} />
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
