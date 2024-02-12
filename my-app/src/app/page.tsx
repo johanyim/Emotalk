@@ -1,12 +1,11 @@
 "use client"; // This is a client component 👈🏽
-import Webcam from "react-webcam";
 
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
-import React from 'react'
 import { socketClient } from "./socket/socket";
 import UploadAndDisplayImage from "./components/UploadAndDisplayImage";
+import WebcamCapture from './components/WebCatpture';
 
 interface Message {
   sender: string;
@@ -65,46 +64,7 @@ export default function Home() {
     const res = await response.json()
     setEmotion(res.emotion)
   }
-  const videoConstraints = {
-    width: 320,
-    height: 180,
-    facingMode: "user"
-  };
-
-  const WebcamCapture = () => {
-    const webcamRef = React.useRef(null);
-    const capture = React.useCallback(
-      async () => {
-        const imageSrc = webcamRef.current.getScreenshot();
-        if (!imageSrc) return
-
-        // Convert base64 string to Blob
-        const blob = blobConvert(imageSrc);
-
-        updateEmotion(blob)
-      },
-
-      [webcamRef]
-    );
-    return (
-      <>
-        <Webcam
-          audio={false}
-          height={180}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={320}
-          videoConstraints={videoConstraints}
-        />
-        <button
-          onClick={capture}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Get emotion (webcam)
-        </button>
-      </>
-    );
-  };
+ 
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
@@ -144,7 +104,7 @@ export default function Home() {
         >
           Get emotion
         </button>
-        {/* <WebcamCapture /> */}
+        <WebcamCapture setSelectedImage={setSelectedImage}/>
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
@@ -160,15 +120,3 @@ export default function Home() {
 }
 
 
-function blobConvert(imageSrc) {
-  // Convert base64 string to Blob
-  const byteCharacters = atob(imageSrc.split(',')[1]);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/jpeg' });
-
-  return blob;
-}
