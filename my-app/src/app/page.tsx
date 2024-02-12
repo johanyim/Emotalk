@@ -24,6 +24,7 @@ export default function Home() {
 
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
 
+  //Socket Effect
   useEffect(() => {
     const socket = socketClient();
 
@@ -38,6 +39,10 @@ export default function Home() {
     });
   }, []); // Empty dependency array to run the effect only once
 
+  // Update automatically when image changes
+  useEffect(() => {
+    updateEmotion(selectedImage)
+  }, [selectedImage]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -50,7 +55,6 @@ export default function Home() {
   };
 
   const updateEmotion = async (image: Blob | File | null = null) => {
-
     if (!image) return
     // POST request to python 
     console.log('sending request');
@@ -66,7 +70,7 @@ export default function Home() {
     const res = await response.json()
     setEmotion(res.emotion)
   }
- 
+
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
@@ -77,8 +81,8 @@ export default function Home() {
             const { sender, message, emotion } = messageObject;
             return (
               <div key={index} className="mb-2">
-                 {sender}:   
-                 <span>{message}</span>
+                {sender}:
+                <span>{message}</span>
               </div>
             );
           })}
@@ -100,13 +104,7 @@ export default function Home() {
             Send
           </button>
         </form>
-        <button
-          onClick={() => updateEmotion(selectedImage)}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Get emotion
-        </button>
-        <WebcamCapture setSelectedImage={setSelectedImage}/>
+        <WebcamCapture setSelectedImage={setSelectedImage} />
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
