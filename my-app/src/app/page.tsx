@@ -1,12 +1,11 @@
 "use client"; // This is a client component 👈🏽
-import Webcam from "react-webcam";
 
-import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
-import React from 'react'
 import { socketClient } from "./socket/socket";
+import UploadAndDisplayImage from "./components/UploadAndDisplayImage";
+import WebcamCapture from './components/WebCatpture';
 
 import './emotions.css'
 
@@ -16,21 +15,36 @@ interface Message {
   emotion: string;
 }
 
+interface UserInfo {
+  name: string
+}
+
+const defaultUser = {
+  name:''
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
-  // const [messages, setMessages] = useState<string[]>([]);
+  const [userInfo, setuserInfo] = useState<UserInfo>(defaultUser);
+
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
 
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
 
+  //Socket Effect
   useEffect(() => {
     const socket = socketClient();
 
+    socket.on("setName", (name: string) => {
+      setuserInfo({ name: name })
+    })
+    
     socket.on("receiveMessage", (newMessage: Message) => {
       setMessages(prevMessages => [...prevMessages, newMessage])
     })
+
     setSocketInstance(prevSocket => {
       if (prevSocket) {
         prevSocket.disconnect(); // Disconnect previous socket
@@ -39,6 +53,10 @@ export default function Home() {
     });
   }, []); // Empty dependency array to run the effect only once
 
+  // Update automatically when image changes
+  useEffect(() => {
+    updateEmotion(selectedImage)
+  }, [selectedImage]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -51,7 +69,6 @@ export default function Home() {
   };
 
   const updateEmotion = async (image: Blob | File | null = null) => {
-
     if (!image) return
     // POST request to python 
     console.log('sending request');
@@ -67,51 +84,14 @@ export default function Home() {
     const res = await response.json()
     setEmotion(res.emotion)
   }
-  const videoConstraints = {
-    width: 100,
-    height: 100,
-    facingMode: "user"
-  };
-
-  const WebcamCapture = () => {
-    const webcamRef = React.useRef(null);
-    const capture = React.useCallback(
-      async () => {
-        const imageSrc = webcamRef.current.getScreenshot();
-        if (!imageSrc) return
-
-        // Convert base64 string to Blob
-        const blob = blobConvert(imageSrc);
-
-        updateEmotion(blob)
-      },
-
-      [webcamRef]
-    );
-    return (
-      <>
-        <Webcam
-          audio={false}
-          height={180}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={320}
-          videoConstraints={videoConstraints}
-        />
-        <button
-          onClick={capture}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Get emotion (webcam)
-        </button>
-      </>
-    );
-  };
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
       <div className=" ">
-        <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+        <div className="flex justify-between ">
+          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+          <span>{userInfo?.name}</span>
+        </div>
         <div className="">
           {messages.map((messageObject, index) => {
             const { sender, message, emotion } = messageObject;
@@ -126,13 +106,12 @@ export default function Home() {
       </div>
 
       <div className=" ">
-    <WebcamCapture/>
-        <form className=" ">
+        <form className="flex gap-4 ">
           <input
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg mr-2"
+            className="border border-gray-300 p-2 rounded-lg mr-2 w-full"
           />
           <button
             onClick={sendMessage}
@@ -141,19 +120,14 @@ export default function Home() {
             Send
           </button>
         </form>
-        {/* <WebcamCapture /> */}
+        {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
           <div className="flex ">
 
             <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-            <button
-              onClick={() => updateEmotion(selectedImage)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            >
-              Get emotion
-            </button>
+
           </div>
         </div>
       </div>
@@ -161,53 +135,4 @@ export default function Home() {
   );
 }
 
-
-function blobConvert(imageSrc) {
-  // Convert base64 string to Blob
-  const byteCharacters = atob(imageSrc.split(',')[1]);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  const blob = new Blob([byteArray], { type: 'image/jpeg' });
-
-  return blob;
-}
-
-const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
-  const [url, setUrl] = useState<any>();
-
-  return (
-    <div>
-      <h1>Upload Image</h1>
-
-      {selectedImage && (
-        <div>
-          <Image
-            width={200}
-            height={200}
-            src={url}
-            alt="uploaded image"
-          />
-          <br />
-          <button onClick={() => setSelectedImage(null)}>Remove</button>
-        </div>
-      )}
-
-      <br />
-      <br />
-
-      <input
-        type="file"
-        name="myImage"
-        onChange={(event) => {
-          const image = event.target.files[0]
-          setSelectedImage(image);
-          setUrl(URL.createObjectURL(image))
-        }}
-      />
-    </div>
-  );
-};
 
