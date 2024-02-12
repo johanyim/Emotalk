@@ -8,6 +8,8 @@ import { Socket, io } from "socket.io-client"
 import React from 'react'
 import { socketClient } from "./socket/socket";
 
+import './emotions.css'
+
 interface Message {
   sender: string;
   message: string;
@@ -116,7 +118,7 @@ export default function Home() {
             return (
               <div key={index} className="mb-2">
                  {sender}:   
-                 <span>{message}, {`emotion: ${emotion}`}</span>
+                 <span>{message}</span>
               </div>
             );
           })}
