@@ -1,22 +1,21 @@
+import { Socket, io } from "socket.io-client"
 
-// GETTING ERROR IF IMPORT
+const PORT = 3000
+export function socketClient() {
+  const socket = io(`:${PORT + 1}`, { path: "/api/socket", addTrailingSlash: false })
 
-// import { io } from "socket.io-client"
+  socket.on("connect", () => {
+    console.log("Connected")
+  })
 
-// const PORT = 3000
-// const socket = io(`:${PORT + 1}`, { path: "/api/socket", addTrailingSlash: false })
+  socket.on("disconnect", () => {
+    console.log("Disconnected")
+  })
 
-// socket.on("connect", () => {
-//   console.log("Connected")
-// })
+  socket.on("connect_error", async err => {
+    console.log(`connect_error due to ${err.message}`)
+    await fetch("/api/socket")
+  })
 
-// socket.on("disconnect", () => {
-//   console.log("Disconnected")
-// })
-
-// socket.on("connect_error", async err => {
-//   console.log(`connect_error due to ${err.message}`)
-//   await fetch("/api/socket")
-// })
-
-// export default socket;
+  return socket
+}
