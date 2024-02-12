@@ -167,6 +167,7 @@ function blobConvert(imageSrc) {
 }
 
 const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
+  const [url, setUrl] = useState<any>();
 
   return (
     <div>
@@ -177,7 +178,7 @@ const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
           <Image
             width={500}
             height={500}
-            src={URL.createObjectURL(selectedImage)}
+            src={url}
             alt="uploaded image"
           />
           <br />
@@ -192,8 +193,9 @@ const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
         type="file"
         name="myImage"
         onChange={(event) => {
-          console.log(event.target.files[0]);
-          setSelectedImage(event.target.files[0]);
+          const image = event.target.files[0]
+          setSelectedImage(image);
+          setUrl(URL.createObjectURL(image))
         }}
       />
     </div>
