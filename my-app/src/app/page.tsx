@@ -15,9 +15,18 @@ interface Message {
   emotion: string;
 }
 
+interface UserInfo {
+  name: string
+}
+
+const defaultUser = {
+  name:''
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
-  // const [messages, setMessages] = useState<string[]>([]);
+  const [userInfo, setuserInfo] = useState<UserInfo>(defaultUser);
+
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
@@ -28,9 +37,14 @@ export default function Home() {
   useEffect(() => {
     const socket = socketClient();
 
+    socket.on("setName", (name: string) => {
+      setuserInfo({ name: name })
+    })
+    
     socket.on("receiveMessage", (newMessage: Message) => {
       setMessages(prevMessages => [...prevMessages, newMessage])
     })
+
     setSocketInstance(prevSocket => {
       if (prevSocket) {
         prevSocket.disconnect(); // Disconnect previous socket
@@ -75,7 +89,10 @@ export default function Home() {
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
       <div className=" ">
-        <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+        <div className="flex justify-between ">
+          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+          <span>{userInfo?.name}</span>
+        </div>
         <div className="">
           {messages.map((messageObject, index) => {
             const { sender, message, emotion } = messageObject;
@@ -104,7 +121,7 @@ export default function Home() {
             Send
           </button>
         </form>
-        <WebcamCapture setSelectedImage={setSelectedImage} />
+        {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>

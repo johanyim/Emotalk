@@ -58,14 +58,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     
     console.log("socket connect", socket.id)
 
-    //Server send initial message at inital connect
-    const payload = {
-      sender: 'Server', //Change later 
-      message: `Welcome ${socketToNameMap[socket.id] }`,
-      emotion:'-'
-    }
-    _socket.emit("receiveMessage", payload)
-
+    //Server send name (dev)
+    _socket.emit("setName", socketToNameMap[socket.id] )
 
     //Server receive message
     socket.on('sendMessage', ({message,emotion}) => {
