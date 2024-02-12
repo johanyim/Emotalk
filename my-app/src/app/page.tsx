@@ -7,6 +7,8 @@ import { socketClient } from "./socket/socket";
 import UploadAndDisplayImage from "./components/UploadAndDisplayImage";
 import WebcamCapture from './components/WebCatpture';
 
+import './emotions.css'
+
 interface Message {
   sender: string;
   message: string;
@@ -75,8 +77,8 @@ export default function Home() {
             const { sender, message, emotion } = messageObject;
             return (
               <div key={index} className="mb-2">
-                {sender}:
-                <span>{message}, {`emotion: ${emotion}`}</span>
+                 {sender}:   
+                 <span>{message}</span>
               </div>
             );
           })}

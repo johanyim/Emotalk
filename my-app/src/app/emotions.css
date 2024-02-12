@@ -1,0 +1,97 @@
+.message {
+    font-size: 1.5rem;
+}
+
+.angry {
+    color: red;
+    font-size: 2rem;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.fear {
+    color: lightblue;
+    animation: shake 0.05s infinite alternate;
+}
+
+@keyframes shake {
+    from {
+        transform: translateX(-1px) scaleY(2.5);
+    }
+    to {
+        transform: translateX(1px) scaleY(2.5);
+    }
+}
+
+.sad {
+    color: darkblue;
+    text-decoration-color: darkblue;
+    opacity: 0.5;
+    animation: 5s squash infinite alternate;
+    transform-origin: bottom;
+}
+
+@keyframes squash {
+    from {
+        transform: scaleY(1);
+    }
+    to {
+        transform: scaleY(0.5);
+    }
+}
+
+.disgust {
+    color: darkgreen;
+    animation: yuck 3s cubic-bezier(.53,.46,.99,-0.35) infinite;
+    transform-origin: bottom;
+}
+
+
+@keyframes yuck {
+    from {
+        transform: skew(0deg);
+    }
+
+    20%, 90% {
+        transform: skew(20deg) scaleY(1.5) translateX(-1rem);
+    }
+}
+
+.happy {
+    color: yellow;
+    font-weight: bold;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+    animation: bounce 2s ease infinite;
+    transform-origin: bottom;
+    animation-name: bounce;
+    animation-timing-function: cubic-bezier(0.280, 0.840, 0.420, 1);
+}
+
+@keyframes bounce {
+    0%   { transform: scaleY(1)      translateY(0); }
+    10%  { transform: scaleY(.9)   translateY(0); }
+    30%  { transform: scaleY(1.1)   translateY(-20px); }
+    50%  { transform: scaleY(.95) translateY(0); }
+    57%  { transform: scaleY(1)      translateY(-7px); }
+    64%  { transform: scaleY(1)      translateY(0); }
+    100% { transform: scaleY(1)      translateY(0); }
+}
+
+.surprise {
+    animation: scream 3s normal infinite;
+    transform-origin: bottom;
+}
+
+@keyframes scream {
+    from {
+    }
+
+    5%, 80% {
+        transform: scaleY(2);
+        color: orange;
+    }
+
+    to {
+    }
+}
+
