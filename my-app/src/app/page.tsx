@@ -8,9 +8,15 @@ import { Socket, io } from "socket.io-client"
 import React from 'react'
 import { socketClient } from "./socket/socket";
 
+interface Message {
+  sender: string;
+  message: string;
+  emotion: string;
+}
 
 export default function Home() {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  // const [messages, setMessages] = useState<string[]>([]);
   const [messageInput, setMessageInput] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
@@ -20,13 +26,7 @@ export default function Home() {
   useEffect(() => {
     const socket = socketClient();
 
-    socket.on("displayMessage", message => {
-      setMessages(prevMessages => [...prevMessages, message])
-    })
-
-    socket.on("receiveMessage", ({sender, message, emotion}) => {
-      const newMessage = `${sender}: ${message} , detected emotion: ${emotion}`
-      console.log('newMessage :>> ', newMessage);
+    socket.on("receiveMessage", (newMessage: Message) => {
       setMessages(prevMessages => [...prevMessages, newMessage])
     })
     setSocketInstance(prevSocket => {
@@ -43,7 +43,7 @@ export default function Home() {
     // Send message warning
     if (messageInput.trim() === '' || !socketInstance) return
 
-    socketInstance.emit('sendMessage', {message:messageInput, emotion});
+    socketInstance.emit('sendMessage', { message: messageInput, emotion });
     setMessageInput('');
     // setMessages([...messages, messageInput])
   };
@@ -111,9 +111,15 @@ export default function Home() {
       <div className=" ">
         <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
         <div className="">
-          {messages.map((message, index) => (
-            <div key={index} className="mb-2">{message}</div>
-          ))}
+          {messages.map((messageObject, index) => {
+            const { sender, message, emotion } = messageObject;
+            return (
+              <div key={index} className="mb-2">
+                 {sender}:   
+                 <span>{message}, {`emotion: ${emotion}`}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -176,8 +182,8 @@ const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
       {selectedImage && (
         <div>
           <Image
-            width={500}
-            height={500}
+            width={200}
+            height={200}
             src={url}
             alt="uploaded image"
           />

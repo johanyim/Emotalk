@@ -58,12 +58,16 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     
     console.log("socket connect", socket.id)
 
-    _socket.emit("receiveMessage", `Welcome ${socketToNameMap[socket.id] }`)
+    //Server send initial message at inital connect
+    const payload = {
+      sender: 'Server', //Change later 
+      message: `Welcome ${socketToNameMap[socket.id] }`,
+      emotion:'-'
+    }
+    _socket.emit("receiveMessage", payload)
 
-    socket.on("disconnect", async () => {
-      console.log("socket disconnect")
-    })
 
+    //Server receive message
     socket.on('sendMessage', ({message,emotion}) => {
       const name = socketToNameMap[socket.id]
       console.log(`RECEIVED MESSAGE: Sender: ${name}, message: ${message}, emotion", ${emotion}`);
@@ -76,6 +80,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
       io.emit('receiveMessage', payload); // Broadcast to all clients
     });
+
+    //Socket disconnects
+    socket.on("disconnect", async () => {
+      console.log("socket disconnect")
+    })
   })
 
   res.socket.server.io = io
