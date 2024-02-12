@@ -68,8 +68,8 @@ export default function Home() {
     setEmotion(res.emotion)
   }
   const videoConstraints = {
-    width: 320,
-    height: 180,
+    width: 100,
+    height: 100,
     facingMode: "user"
   };
 
@@ -116,9 +116,9 @@ export default function Home() {
           {messages.map((messageObject, index) => {
             const { sender, message, emotion } = messageObject;
             return (
-              <div key={index} className="mb-2">
-                 {sender}:   
-                 <span>{message}</span>
+                
+              <div key={index} className={`mb-2 text-xl`}>
+                 {sender}: <span className={`${emotion} message`}>{message}</span>
               </div>
             );
           })}
@@ -126,6 +126,7 @@ export default function Home() {
       </div>
 
       <div className=" ">
+    <WebcamCapture/>
         <form className=" ">
           <input
             type="text"
