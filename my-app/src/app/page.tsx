@@ -64,6 +64,14 @@ export default function Home() {
     if (messageInput.trim() === '' || !socketInstance) return
 
     socketInstance.emit('sendMessage', { message: messageInput, emotion });
+
+    const newMessage = {
+      sender: 'me',
+      message: messageInput,
+      emotion
+    }
+    setMessages(prevMessages => [...prevMessages, newMessage])
+
     setMessageInput('');
     // setMessages([...messages, messageInput])
   };
@@ -97,7 +105,7 @@ export default function Home() {
             const { sender, message, emotion } = messageObject;
             return (
                 
-              <div key={index} className={`mb-2 text-xl`}>
+              <div key={index} className={`mb-2 text-xl ${sender==='me' && 'text-right'}`}>
                  {sender}: <span className={`${emotion} message`}>{message}</span>
               </div>
             );
@@ -120,7 +128,7 @@ export default function Home() {
             Send
           </button>
         </form>
-        <WebcamCapture setSelectedImage={setSelectedImage} />
+        {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
 
         <div className=" mt-10">
           <span className=" text-emerald-500">Detected Emotion: {emotion}</span>

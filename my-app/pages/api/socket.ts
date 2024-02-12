@@ -72,7 +72,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         emotion
       }
 
-      io.emit('receiveMessage', payload); // Broadcast to all clients
+      socket.broadcast.emit('receiveMessage', payload); // Broadcast to all clients
     });
 
     //Socket disconnects
