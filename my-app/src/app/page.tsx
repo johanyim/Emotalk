@@ -1,12 +1,12 @@
 "use client"; // This is a client component 👈🏽
 import Webcam from "react-webcam";
 
-import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
 import React from 'react'
 import { socketClient } from "./socket/socket";
+import UploadAndDisplayImage from "./components/UploadAndDisplayImage";
 
 interface Message {
   sender: string;
@@ -115,8 +115,8 @@ export default function Home() {
             const { sender, message, emotion } = messageObject;
             return (
               <div key={index} className="mb-2">
-                 {sender}:   
-                 <span>{message}, {`emotion: ${emotion}`}</span>
+                {sender}:
+                <span>{message}, {`emotion: ${emotion}`}</span>
               </div>
             );
           })}
@@ -124,12 +124,12 @@ export default function Home() {
       </div>
 
       <div className=" ">
-        <form className=" ">
+        <form className="flex gap-4 ">
           <input
             type="text"
             value={messageInput}
             onChange={(e) => setMessageInput(e.target.value)}
-            className="border border-gray-300 p-2 rounded-lg mr-2"
+            className="border border-gray-300 p-2 rounded-lg mr-2 w-full"
           />
           <button
             onClick={sendMessage}
@@ -138,6 +138,12 @@ export default function Home() {
             Send
           </button>
         </form>
+        <button
+          onClick={() => updateEmotion(selectedImage)}
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+        >
+          Get emotion
+        </button>
         {/* <WebcamCapture /> */}
 
         <div className=" mt-10">
@@ -145,12 +151,7 @@ export default function Home() {
           <div className="flex ">
 
             <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-            <button
-              onClick={() => updateEmotion(selectedImage)}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            >
-              Get emotion
-            </button>
+
           </div>
         </div>
       </div>
@@ -171,40 +172,3 @@ function blobConvert(imageSrc) {
 
   return blob;
 }
-
-const UploadAndDisplayImage = ({ selectedImage, setSelectedImage }) => {
-  const [url, setUrl] = useState<any>();
-
-  return (
-    <div>
-      <h1>Upload Image</h1>
-
-      {selectedImage && (
-        <div>
-          <Image
-            width={200}
-            height={200}
-            src={url}
-            alt="uploaded image"
-          />
-          <br />
-          <button onClick={() => setSelectedImage(null)}>Remove</button>
-        </div>
-      )}
-
-      <br />
-      <br />
-
-      <input
-        type="file"
-        name="myImage"
-        onChange={(event) => {
-          const image = event.target.files[0]
-          setSelectedImage(image);
-          setUrl(URL.createObjectURL(image))
-        }}
-      />
-    </div>
-  );
-};
-
