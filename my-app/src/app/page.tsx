@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Socket, io } from "socket.io-client"
 
-import { socketClient } from "./socket/socket";
-import UploadAndDisplayImage from "./components/UploadAndDisplayImage";
-import WebcamCapture from './components/WebCatpture';
+import { socketClient } from "../socket/socket";
+import UploadAndDisplayImage from "../components/UploadAndDisplayImage";
+import WebcamCapture from '../components/WebCatpture';
 
 import './emotions.css'
 
