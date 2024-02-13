@@ -103,15 +103,14 @@ function Message({ emotion }) {
 
     socket.emit('sendMessage', { message: messageInput, emotion });
 
+    //Display own message
     const newMessage = {
       sender: 'me',
       message: messageInput,
       emotion
     }
     setMessages(prevMessages => [...prevMessages, newMessage])
-
     setMessageInput('');
-    // setMessages([...messages, messageInput])
   };
 
   return (

@@ -41,6 +41,7 @@ const random_names = [
   "Levi", "Claire", "Aaron", "Jasmine", "Jack", "Bella", "Evan", "Lucy", "Grayson"
 ]
 
+let io:IOServer;
 
 export default function SocketHandler(_req: NextApiRequest, res: NextApiResponseWithSocket) {
   if (res.socket.server.io) {
@@ -50,7 +51,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   console.log("Starting Socket.IO server on port:", PORT + 1)
   //@ts-expect-error
-  const io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(PORT + 1)
+  io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(PORT + 1)
 
   io.on("connect", socket => {
     const _socket = socket
@@ -75,6 +76,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       socket.broadcast.emit('receiveMessage', payload); // Broadcast to all clients
     });
 
+    socket.on('getCurrentPeople', (cb) => {
+      const people = getCurrentOnline()
+      cb(people)
+    });
+
     //Socket disconnects
     socket.on("disconnect", async () => {
       console.log("socket disconnect")
@@ -83,4 +89,13 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   res.socket.server.io = io
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
+}
+
+export function getCurrentOnline() {
+  const socketIds = Array.from(io.sockets.sockets)
+  const socketNames = socketIds.map(([socketId]) => {
+    return socketToNameMap[socketId];
+  });
+
+  return socketNames
 }
