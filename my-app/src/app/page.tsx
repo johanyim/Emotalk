@@ -8,6 +8,7 @@ import UploadAndDisplayImage from "../components/UploadAndDisplayImage";
 import WebcamCapture from '../components/WebCatpture';
 
 import './emotions.css'
+import Sidebar from '@/components/Sidebar';
 
 interface Message {
   sender: string;
@@ -20,7 +21,7 @@ interface UserInfo {
 }
 
 const defaultUser = {
-  name:''
+  name: ''
 }
 
 // import Register from './pages/Register'
@@ -28,8 +29,8 @@ const defaultUser = {
 // export default 
 // Register;
 
-export default 
-function Home() {
+export default
+  function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInfo, setuserInfo] = useState<UserInfo>(defaultUser);
 
@@ -46,7 +47,7 @@ function Home() {
     socket.on("setName", (name: string) => {
       setuserInfo({ name: name })
     })
-    
+
     socket.on("receiveMessage", (newMessage: Message) => {
       setMessages(prevMessages => [...prevMessages, newMessage])
     })
@@ -69,8 +70,8 @@ function Home() {
     // Send message warning
     if (messageInput.trim() === '' || !socketInstance) return
     if (emotion === "neutral") {
-        window.alert("Sorry, I don't know how you feel about that.")
-        return
+      window.alert("Sorry, I don't know how you feel about that.")
+      return
     }
 
     socketInstance.emit('sendMessage', { message: messageInput, emotion });
@@ -104,52 +105,52 @@ function Home() {
   }
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-gray-100 rounded-lg shadow-md h-screen  flex flex-col  justify-between">
-      <div className=" ">
-        <div className="flex justify-between ">
-          <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
-          <span>{userInfo?.name}</span>
-        </div>
-        <div className="">
-          {messages.map((messageObject, index) => {
-            const { sender, message, emotion } = messageObject;
-            return (
-                
-              <div key={index} className={`mb-2 text-xl ${sender==='me' && 'text-right'}`}>
-                 {sender}: <span className={`${emotion} message`}>{message}</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
+      <Sidebar />
+      <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
+        <div className=" ">
+          <div className="flex justify-between ">
+            <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+            <span>{userInfo?.name}</span>
+          </div>
+          <div className="">
+            {messages.map((messageObject, index) => {
+              const { sender, message, emotion } = messageObject;
+              return (
 
-      <div className=" ">
-        <form className="flex gap-4 ">
-          <input
-            type="text"
-            value={messageInput}
-            onChange={(e) => setMessageInput(e.target.value)}
-            className={`${emotion} border border-gray-300 p-2 rounded-lg mr-2 w-full`}
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-          >
-            Send
-          </button>
-        </form>
-        {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
-
-        <div className=" mt-10">
-          <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
-          <div className="flex ">
-
-            <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-
+                <div key={index} className={`mb-2 text-xl ${sender === 'me' && 'text-right'}`}>
+                  {sender}: <span className={`${emotion} message`}>{message}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
-    </div >
+
+        <div className=" ">
+          <form className="flex gap-4 ">
+            <input
+              type="text"
+              value={messageInput}
+              onChange={(e) => setMessageInput(e.target.value)}
+              className={`${emotion} border border-gray-300 p-2 rounded-lg mr-2 w-full`}
+            />
+            <button
+              onClick={sendMessage}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            >
+              Send
+            </button>
+          </form>
+
+          <div className=" mt-10">
+            <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
+            <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+            {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
+          </div>
+        </div>
+      </div >
+    </div>
+
   );
 }
 
