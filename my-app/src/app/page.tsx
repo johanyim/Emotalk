@@ -62,6 +62,10 @@ export default function Home() {
     e.preventDefault();
     // Send message warning
     if (messageInput.trim() === '' || !socketInstance) return
+    if (emotion === "neutral") {
+        window.alert("Sorry, I don't know how you feel about that.")
+        return
+    }
 
     socketInstance.emit('sendMessage', { message: messageInput, emotion });
 

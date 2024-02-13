@@ -1,6 +1,6 @@
-flask
+Flask==3.0.2
 flask_cors
 deepface
-opencv-python
+opencv-python-headless
 python-dotenv
 

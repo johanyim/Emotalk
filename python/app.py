@@ -10,7 +10,6 @@ import cv2
 from deepface import DeepFace
 
 
-# @app.route('/api/emotion')
 @app.route('/read_emotion', methods=['POST'])
 def read_emotion():
 
