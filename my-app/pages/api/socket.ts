@@ -1,5 +1,5 @@
 // pages/api/socket.ts
-import { getRandomIndex } from "@/app/utils/utils"
+import { getRandomIndex } from "@/utils/utils"
 import type { Server as HTTPServer } from "http"
 import type { Socket as NetSocket } from "net"
 import type { NextApiRequest, NextApiResponse } from "next"
