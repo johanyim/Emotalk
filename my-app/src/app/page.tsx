@@ -23,7 +23,13 @@ const defaultUser = {
   name:''
 }
 
-export default function Home() {
+// import Register from './pages/Register'
+
+// export default 
+// Register;
+
+export default 
+function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userInfo, setuserInfo] = useState<UserInfo>(defaultUser);
 
