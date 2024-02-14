@@ -31,6 +31,7 @@ export default function Home() {
   const [userInfo, setUserInfo] = useState<UserInfo>(defaultUser);
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
+  const [currentRoom, setCurrentRoom] = useState('default');
 
   // Update automatically when image changes
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function Home() {
   return (
     <SocketProvider>
       <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-        <Sidebar />
+        <Sidebar setCurrentRoom={setCurrentRoom}/>
         <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
           <Header userInfo={userInfo} setUserInfo={setUserInfo} />
           <Message emotion={emotion} />

@@ -62,11 +62,10 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       socket.broadcast.emit('receiveMessage', payload);
     });
 
-    //Get all current online people, exclude the user itself
-    socket.on('getCurrentPeople', (cb) => {
-      const users = getCurrentUsers()
-      // filter their own name
-      cb(users.filter(info => info.id !== socket.id))
+    //Get all current rooms for the current socket
+    socket.on('getRooms', (cb) => {
+      const rooms = getCurrentRooms(socket.id)
+      cb(rooms)
     });
 
     //Socket disconnects
@@ -79,15 +78,31 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
-export function getCurrentUsers() {
+export function getCurrentRooms(socketId:string) {
   //io.sockets.sockets return a map <id, socket>
   const socketEntries = Array.from(io.sockets.sockets.entries());
-  const socketInfo = socketEntries.map(([id, socket]) => ({
-    id,
-    username: (socket as ISocket).username
-  }));
+  const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socketId); //Filter Self
 
-  return socketInfo
+  const roomInfo = filteredSocketEntries.map(([id, other_socket]) => {
+    return {
+      id: generateRoomId(socketId,id),
+      name: (other_socket as ISocket).username
+    }
+  });
+
+  return roomInfo
+}
+
+
+//Generate by just concating the socket ids
+function generateRoomId(id1:string, id2:string) {
+  let id;
+  if (id1[0] < id2[0]) {
+    id = id1 + id2;
+  } else {
+    id = id2 + id1;
+  }
+  return id;
 }
 
 export const socketToRoomMap = {};

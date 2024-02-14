@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useSocket } from './SocketContext';
 
-export default function Sidebar() {
-
+export default function Sidebar({setCurrentRoom}) {
     return (
         <div className='min-w-[300px]'>
             <div className='flex flex-col gap-8'>
 
                 <Header />
-                <ShowOnlinePeople />
+                <ShowOnlinePeople setCurrentRoom={setCurrentRoom}/>
             </div>
         </div >
     );
@@ -25,28 +24,29 @@ function Header() {
 }
 
 
-interface userInfo {
+interface roomInfo {
     id:string
-    username?:string
+    name?:string
 }
 //every 10s
 const updateRoomTime = 10 * 1000
 
-function ShowOnlinePeople() {
-    const [users, setUsers] = useState<userInfo[]>([])
+function ShowOnlinePeople({setCurrentRoom}) {
+    const [rooms, setRooms] = useState<roomInfo[]>([])
     const socket = useSocket();
 
     useEffect(() => {
-        const fetchUsers = () => {
+        const fetchRooms = () => {
+            console.log('fetching roomns:>> ');
             if (!socket) return
-            socket.emit('getCurrentPeople', (users:userInfo[]) => {
-                setUsers(users)
+            socket.emit('getRooms', (rooms:roomInfo[]) => {
+                setRooms(rooms)
             })
         }
 
-        fetchUsers()
+        fetchRooms()
         const intervalId = setInterval(() => {
-            fetchUsers()
+            fetchRooms()
         }, updateRoomTime);
 
         // Clean up the interval when the component unmounts
@@ -58,10 +58,11 @@ function ShowOnlinePeople() {
 
     return (
         <div className='flex flex-col'>
-            {users.map((user, index) => {
-                const name = user.username
+            {rooms.map((rooms, index) => {
+                const name = rooms.name
+                const id = rooms.id
                 return (
-                    <button key={index} className='p-8'>
+                    <button key={index} className='p-8' onClick={() => setCurrentRoom(id)}>
                         {name}
                     </button>
                 )
