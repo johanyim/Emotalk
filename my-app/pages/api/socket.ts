@@ -1,9 +1,9 @@
 // pages/api/socket.ts
-import { getRandomIndex } from "@/utils/utils"
+import { getRandomIndex, getRandomName } from "../../utils"
 import type { Server as HTTPServer } from "http"
 import type { Socket as NetSocket } from "net"
 import type { NextApiRequest, NextApiResponse } from "next"
-import type { Server as IOServer } from "socket.io"
+import type { Server as IOServer, Socket } from "socket.io"
 import { Server } from "socket.io"
 
 const PORT = 3000
@@ -25,23 +25,11 @@ interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO
 }
 
-export const socketToNameMap: { [socketId: string]: string } = {};
-export const socketToRoomMap = {};
+let io: IOServer;
 
-const random_names = [
-  "Jasmine", "Xavier", "Emily", "Blake", "Mia", "Ethan", "Sophia", "Jackson", "Olivia", "Liam",
-  "Ava", "Noah", "Isabella", "Lucas", "Harper", "Aiden", "Emma", "Elijah", "Charlotte", "Mason",
-  "Amelia", "Logan", "Evelyn", "Carter", "Abigail", "Benjamin", "Grace", "Alexander", "Riley",
-  "Scarlett", "James", "Lily", "Jacob", "Zoe", "Michael", "Avery", "William", "Evelyn", "Henry",
-  "Mia", "Samuel", "Chloe", "Ethan", "Madison", "Elijah", "Addison", "Alexander", "Eleanor",
-  "Daniel", "Victoria", "David", "Aria", "Joseph", "Penelope", "Matthew", "Harper", "Gabriel",
-  "Layla", "Christopher", "Aubrey", "Joshua", "Natalie", "Oliver", "Brooklyn", "Sebastian", "Hannah",
-  "Andrew", "Savannah", "Dylan", "Stella", "Nathan", "Zoey", "Jonathan", "Paisley", "Isaac", "Leah",
-  "Owen", "Audrey", "Julian", "Grace", "Lincoln", "Sofia", "Isaac", "Ruby", "Zachary", "Eleanor",
-  "Levi", "Claire", "Aaron", "Jasmine", "Jack", "Bella", "Evan", "Lucy", "Grayson"
-]
-
-let io:IOServer;
+interface ISocket extends Socket {
+  username?: string;
+}
 
 export default function SocketHandler(_req: NextApiRequest, res: NextApiResponseWithSocket) {
   if (res.socket.server.io) {
@@ -53,32 +41,32 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   //@ts-expect-error
   io = new Server({ path: "/api/socket", addTrailingSlash: false, cors: { origin: "*" } }).listen(PORT + 1)
 
-  io.on("connect", socket => {
-    const _socket = socket
-    socketToNameMap[socket.id] = random_names[getRandomIndex(random_names)]
-    
+  io.on("connect", (socket: ISocket) => {
     console.log("socket connect", socket.id)
 
-    //Server send name (dev)
-    _socket.emit("setName", socketToNameMap[socket.id] )
+    //Set name
+    socket.username = getRandomName()
+    socket.emit("setName", socket.username)
 
     //Server receive message
-    socket.on('sendMessage', ({message,emotion}) => {
-      const name = socketToNameMap[socket.id]
-      console.log(`RECEIVED MESSAGE: Sender: ${name}, message: ${message}, emotion", ${emotion}`);
+    socket.on('sendMessage', ({ message, emotion }) => {
+      const from = socket.username
+      console.log(`RECEIVED MESSAGE: Sender: ${from}, message: ${message}, emotion", ${emotion}`);
 
       const payload = {
-        sender: name, //Change later 
+        sender: from,
         message,
         emotion
       }
 
-      socket.broadcast.emit('receiveMessage', payload); // Broadcast to all clients
+      socket.broadcast.emit('receiveMessage', payload);
     });
 
+    //Get all current online people, exclude the user itself
     socket.on('getCurrentPeople', (cb) => {
-      const people = getCurrentOnline()
-      cb(people)
+      const users = getCurrentUsers()
+      // filter their own name
+      cb(users.filter(info => info.id !== socket.id))
     });
 
     //Socket disconnects
@@ -91,11 +79,16 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
-export function getCurrentOnline() {
-  const socketIds = Array.from(io.sockets.sockets)
-  const socketNames = socketIds.map(([socketId]) => {
-    return socketToNameMap[socketId];
-  });
+export function getCurrentUsers() {
+  //io.sockets.sockets return a map <id, socket>
+  const socketEntries = Array.from(io.sockets.sockets.entries());
+  const socketInfo = socketEntries.map(([id, socket]) => ({
+    id,
+    username: (socket as ISocket).username
+  }));
 
-  return socketNames
+  return socketInfo
 }
+
+export const socketToRoomMap = {};
+

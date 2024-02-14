@@ -24,17 +24,29 @@ function Header() {
     )
 }
 
+
+interface userInfo {
+    id:string
+    username?:string
+}
 //every 10s
-const updateRoomTime = 10*1000
+const updateRoomTime = 10 * 1000
 
 function ShowOnlinePeople() {
-    const [names, setnames] = useState(['A', 'V', 'C'])
+    const [users, setUsers] = useState<userInfo[]>([])
     const socket = useSocket();
 
     useEffect(() => {
-        fetchPeople()
+        const fetchUsers = () => {
+            if (!socket) return
+            socket.emit('getCurrentPeople', (users:userInfo[]) => {
+                setUsers(users)
+            })
+        }
+
+        fetchUsers()
         const intervalId = setInterval(() => {
-            fetchPeople()
+            fetchUsers()
         }, updateRoomTime);
 
         // Clean up the interval when the component unmounts
@@ -42,22 +54,18 @@ function ShowOnlinePeople() {
             clearInterval(intervalId);
         };
 
-    }, [socket]); // Empty dependency array to run the effect only once
-
-
-    const fetchPeople = () => {
-        if (!socket) return
-        socket.emit('getCurrentPeople', people => {
-            setnames(people)
-        })
-    }
+    }, [socket]);
 
     return (
-        <div className='flex flex-col gap-8'>
-            {names.map((name, index) =>
-                <div key={index}>
-                    {name}
-                </div>
+        <div className='flex flex-col'>
+            {users.map((user, index) => {
+                const name = user.username
+                return (
+                    <button key={index} className='p-8'>
+                        {name}
+                    </button>
+                )
+            }
             )}
         </div>
     )
