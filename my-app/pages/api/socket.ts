@@ -101,7 +101,10 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
+//TODO Need to seperate this function out, propably not used later
 export function getCurrentRooms(socket: ISocket) {
+
+  const currentRooms = Array.from(socket.rooms);
   //io.sockets.sockets return a map <id, socket>
   const socketEntries = Array.from(io.sockets.sockets.entries());
   const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socket.id); //Filter Self
@@ -117,6 +120,14 @@ export function getCurrentRooms(socket: ISocket) {
       name: (other_socket as ISocket).username
     }
   });
+
+  //Put lobby to be the first item
+  roomInfo.unshift(
+    {
+      id: 'lobby',
+      name: 'Lobby'
+    }
+  )
 
   return roomInfo
 }
@@ -148,4 +159,15 @@ function storeMessage(room: string, payload: MessageStorage) {
   }
 
   messageStorage[room].messages.push(payload)
+}
+
+//Create Group Chat
+function createRoom(room: string, name: string) {
+
+  // generate random id
+  const random_id = Math.floor(Math.random() * 100000000)
+
+  if (!messageStorage[room]) {
+    messageStorage[random_id] = { messages: [], type: 'Group Chat', name: name };
+  }
 }

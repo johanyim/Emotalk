@@ -81,7 +81,7 @@ function Main() {
 
   return (
     <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-      <Sidebar setCurrentRoom={setCurrentRoom} />
+      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} />
       <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
         <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage}/>
         <Message currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage}/>
