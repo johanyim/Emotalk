@@ -31,10 +31,31 @@ const defaultUser = {
 export let socket: Socket | null = null;
 
 export default function Home() {
+  return (
+    <SocketProvider>
+      <Main />
+    </SocketProvider>
+  );
+}
+
+function Main() {
   const [userInfo, setUserInfo] = useState<UserInfo>(defaultUser);
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
+
   const [currentRoom, setCurrentRoom] = useState('lobby');
+  const socket = useSocket();
+  const [storage, setStorage] = useState<ServerStorage>({});
+
+  useEffect(() => {
+    if (!socket) return
+
+    socket.emit("fetchMessages", (messages: ServerStorage) => {
+      console.log('messages :>> ', messages);
+      setStorage(messages)
+    })
+
+  }, [socket]);
 
   // Update automatically when image changes
   useEffect(() => {
@@ -59,36 +80,34 @@ export default function Home() {
   }
 
   return (
-    <SocketProvider>
-      <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-        <Sidebar setCurrentRoom={setCurrentRoom} />
-        <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
-          <Header userInfo={userInfo} setUserInfo={setUserInfo} />
-          <Message currentRoom={currentRoom} emotion={emotion} />
+    <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
+      <Sidebar setCurrentRoom={setCurrentRoom} />
+      <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
+        <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage}/>
+        <Message currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage}/>
 
 
-          <div className=" ">
-            <div className=" mt-10">
-              <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
-              <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
-              {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
-            </div>
+        <div className=" ">
+          <div className=" mt-10">
+            <span className=" text-emerald-500">Detected Emotion: {emotion}</span>
+            <UploadAndDisplayImage selectedImage={selectedImage} setSelectedImage={setSelectedImage} />
+            {/* <WebcamCapture setSelectedImage={setSelectedImage} /> */}
           </div>
-        </div >
-      </div>
-    </SocketProvider>
+        </div>
+      </div >
+    </div>
   );
 }
 
 
-function Message({ currentRoom, emotion }) {
-  const [messageStorage, setMessageStorage] = useState<ServerStorage>({});
+function Message({ currentRoom, emotion, storage, setStorage }) {
   const [messageInput, setMessageInput] = useState('');
 
   const socket = useSocket();
 
   useEffect(() => {
     if (!socket) return
+
 
     socket.on("receiveMessage", (newMessageInfo: Message) => {
       const room = newMessageInfo.room;
@@ -99,20 +118,12 @@ function Message({ currentRoom, emotion }) {
         emotion: newMessageInfo.emotion
       };
 
-      // console.log('receive messages :>> ', message);
-      // Update the messages state for the corresponding room
-      addMessageToStorage(message,room)
+      console.log('receive messages :>> ', message, room);
+      addMessageToStorage(message, room)
       // console.log('messages.lobby :>> ', messageStorage[currentRoom]);
     })
 
-    socket.emit("fetchMessages", (messages: ServerStorage) => {
-      console.log('messages :>> ', messages);
-      setMessageStorage(messages)
-    })
-
   }, [socket]);
-
-
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -123,25 +134,26 @@ function Message({ currentRoom, emotion }) {
       return
     }
 
-    socket.emit('sendMessage', { message: messageInput, emotion });
+    socket.emit('sendMessage', { message: messageInput, emotion, room: currentRoom });
 
     // Display own message
     const newMessage = {
-      id:socket.id,
+      id: socket.id,
       sender: 'me',
       message: messageInput,
       emotion
     }
 
-    addMessageToStorage(newMessage,currentRoom)
+    addMessageToStorage(newMessage, currentRoom)
     setMessageInput('');
   };
 
-  function addMessageToStorage(newMessage:MessageStorage, room:string) {
-    setMessageStorage(prevMessages => ({
-      ...prevMessages,
+  function addMessageToStorage(newMessage: MessageStorage, room: string) {
+    setStorage((prevStorage:ServerStorage) => ({
+      ...prevStorage,
       [room]: {
-        messages: [...(prevMessages[room]?.messages || []), newMessage]
+        ...prevStorage[room],
+        messages: [...(prevStorage[room]?.messages || []), newMessage]
       }
     }));
   }
@@ -149,8 +161,8 @@ function Message({ currentRoom, emotion }) {
   return (
     <div className='flex flex-col justify-between h-full'>
       <div className="">
-        {messageStorage[currentRoom]?.messages.map((messageObject, index) => {
-          const {id, sender, message, emotion } = messageObject;
+        {storage[currentRoom]?.messages?.map((messageObject:MessageStorage, index:number) => {
+          const { id, sender, message, emotion } = messageObject;
           const fromSelf = id === socket?.id
           return (
 
@@ -182,9 +194,10 @@ function Message({ currentRoom, emotion }) {
 interface HeaderProps {
   userInfo: UserInfo;
   setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
+  storage: ServerStorage
 }
 
-function Header({ userInfo, setUserInfo }: HeaderProps) {
+function Header({ userInfo, setUserInfo, storage }: HeaderProps) {
   const socket = useSocket();
 
   //Socket Effect

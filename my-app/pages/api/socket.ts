@@ -58,13 +58,13 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
         console.error(`${socket} has no username`)
         return
       }
-      console.log(`RECEIVED MESSAGE: Sender: ${from}, message: ${message}, emotion", ${emotion}`);
+      console.log(`RECEIVED MESSAGE: Sender: ${from}, message: ${message}, emotion, ${emotion}, room, ${room}`);
 
       const payload = {
         id: socket.id,
         message,
         emotion,
-        sender:from,//remove later
+        sender: from,//remove later
       }
 
       //Also store in server
@@ -74,25 +74,21 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     //Get all current rooms for the current socket
     socket.on('getRooms', (cb) => {
-      const rooms = getCurrentRooms(socket.id)
+      const rooms = getCurrentRooms(socket)
       cb(rooms)
     });
 
     socket.on('fetchMessages', (cb) => {
       const rooms = socket.rooms;
-      console.log('rooms :>> ', rooms);
 
-      let messages: ServerStorage = {};
+      //Find messages in rooms joined
+      let storage: ServerStorage = {};
       rooms.forEach(roomName => {
-        const roomMessages = messageStorage[roomName]?.messages || [];
-        console.log('roomName :>> ', roomName);
-        console.log('messageStorage[roomName] :>> ', messageStorage[roomName]);
-        // if (roomMessages.length===0) return
-        messages[roomName] = { messages: roomMessages }
-
+        const roomStorage = messageStorage[roomName] || [];
+        storage[roomName] = roomStorage
       });
-      console.log('messages :>> ', messages);
-      cb(messages)
+
+      cb(storage)
     });
 
     //Socket disconnects
@@ -105,14 +101,19 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
-export function getCurrentRooms(socketId: string) {
+export function getCurrentRooms(socket: ISocket) {
   //io.sockets.sockets return a map <id, socket>
   const socketEntries = Array.from(io.sockets.sockets.entries());
-  const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socketId); //Filter Self
+  const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socket.id); //Filter Self
 
   const roomInfo = filteredSocketEntries.map(([id, other_socket]) => {
+    const roomId = generateRoomId(socket.id, id)
+    // IDK if this is good or bad!
+    socket.join(roomId)
+    other_socket.join(roomId)
+
     return {
-      id: generateRoomId(socketId, id),
+      id: roomId,
       name: (other_socket as ISocket).username
     }
   });
@@ -133,15 +134,17 @@ function generateRoomId(id1: string, id2: string) {
 }
 
 const messageStorage: ServerStorage = {
-  'default': {
-    messages: []
+  'lobby': {
+    messages: [],
+    type: 'Group Chat',
+    name: 'Lobby'
   },
 }
 
 // Store new message in Server
 function storeMessage(room: string, payload: MessageStorage) {
   if (!messageStorage[room]) {
-    messageStorage[room] = { messages: [] };
+    messageStorage[room] = { messages: [], type: 'Direct Message' };
   }
 
   messageStorage[room].messages.push(payload)

@@ -6,8 +6,12 @@ export interface MessageStorage {
     sender:string, // remove later
 }
 
+type roomType = 'Direct Message'|'Group Chat';
+
 export interface RoomStorage {
     messages: MessageStorage[]
+    type:roomType
+    name?:string
 }
 
 //Room name to Room storage
