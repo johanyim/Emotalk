@@ -5,6 +5,7 @@ import type { Socket as NetSocket } from "net"
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { Server as IOServer, Socket } from "socket.io"
 import { Server } from "socket.io"
+import { MessageStorage, ServerStorage } from "../../types/storage"
 
 const PORT = 3000
 export const config = {
@@ -43,29 +44,55 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
   io.on("connect", (socket: ISocket) => {
     console.log("socket connect", socket.id)
+    //Join starting room
+    socket.join('lobby')
 
     //Set name
     socket.username = getRandomName()
     socket.emit("setName", socket.username)
 
     //Server receive message
-    socket.on('sendMessage', ({ message, emotion }) => {
+    socket.on('sendMessage', ({ message, emotion, room = 'lobby' }) => {
       const from = socket.username
+      if (!from) {
+        console.error(`${socket} has no username`)
+        return
+      }
       console.log(`RECEIVED MESSAGE: Sender: ${from}, message: ${message}, emotion", ${emotion}`);
 
       const payload = {
-        sender: from,
+        id: socket.id,
         message,
-        emotion
+        emotion,
+        sender:from,//remove later
       }
 
-      socket.broadcast.emit('receiveMessage', payload);
+      //Also store in server
+      storeMessage(room, payload)
+      socket.to(room).emit('receiveMessage', { ...payload, sender: from, room });
     });
 
     //Get all current rooms for the current socket
     socket.on('getRooms', (cb) => {
       const rooms = getCurrentRooms(socket.id)
       cb(rooms)
+    });
+
+    socket.on('fetchMessages', (cb) => {
+      const rooms = socket.rooms;
+      console.log('rooms :>> ', rooms);
+
+      let messages: ServerStorage = {};
+      rooms.forEach(roomName => {
+        const roomMessages = messageStorage[roomName]?.messages || [];
+        console.log('roomName :>> ', roomName);
+        console.log('messageStorage[roomName] :>> ', messageStorage[roomName]);
+        // if (roomMessages.length===0) return
+        messages[roomName] = { messages: roomMessages }
+
+      });
+      console.log('messages :>> ', messages);
+      cb(messages)
     });
 
     //Socket disconnects
@@ -78,14 +105,14 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
   res.status(201).json({ success: true, message: "Socket is started", socket: `:${PORT + 1}` })
 }
 
-export function getCurrentRooms(socketId:string) {
+export function getCurrentRooms(socketId: string) {
   //io.sockets.sockets return a map <id, socket>
   const socketEntries = Array.from(io.sockets.sockets.entries());
   const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socketId); //Filter Self
 
   const roomInfo = filteredSocketEntries.map(([id, other_socket]) => {
     return {
-      id: generateRoomId(socketId,id),
+      id: generateRoomId(socketId, id),
       name: (other_socket as ISocket).username
     }
   });
@@ -95,7 +122,7 @@ export function getCurrentRooms(socketId:string) {
 
 
 //Generate by just concating the socket ids
-function generateRoomId(id1:string, id2:string) {
+function generateRoomId(id1: string, id2: string) {
   let id;
   if (id1[0] < id2[0]) {
     id = id1 + id2;
@@ -105,5 +132,17 @@ function generateRoomId(id1:string, id2:string) {
   return id;
 }
 
-export const socketToRoomMap = {};
+const messageStorage: ServerStorage = {
+  'default': {
+    messages: []
+  },
+}
 
+// Store new message in Server
+function storeMessage(room: string, payload: MessageStorage) {
+  if (!messageStorage[room]) {
+    messageStorage[room] = { messages: [] };
+  }
+
+  messageStorage[room].messages.push(payload)
+}

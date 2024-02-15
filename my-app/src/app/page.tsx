@@ -10,11 +10,14 @@ import WebcamCapture from '../components/WebCatpture';
 import './emotions.css'
 import Sidebar from '@/components/Sidebar';
 import { SocketProvider, useSocket } from '@/components/SocketContext';
+import { MessageStorage, ServerStorage } from '../../types/storage';
 
 interface Message {
+  id: string
   sender: string;
   message: string;
   emotion: string;
+  room: string;
 }
 
 interface UserInfo {
@@ -31,7 +34,7 @@ export default function Home() {
   const [userInfo, setUserInfo] = useState<UserInfo>(defaultUser);
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
-  const [currentRoom, setCurrentRoom] = useState('default');
+  const [currentRoom, setCurrentRoom] = useState('lobby');
 
   // Update automatically when image changes
   useEffect(() => {
@@ -58,10 +61,10 @@ export default function Home() {
   return (
     <SocketProvider>
       <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-        <Sidebar setCurrentRoom={setCurrentRoom}/>
+        <Sidebar setCurrentRoom={setCurrentRoom} />
         <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
           <Header userInfo={userInfo} setUserInfo={setUserInfo} />
-          <Message emotion={emotion} />
+          <Message currentRoom={currentRoom} emotion={emotion} />
 
 
           <div className=" ">
@@ -78,8 +81,8 @@ export default function Home() {
 }
 
 
-function Message({ emotion }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+function Message({ currentRoom, emotion }) {
+  const [messageStorage, setMessageStorage] = useState<ServerStorage>({});
   const [messageInput, setMessageInput] = useState('');
 
   const socket = useSocket();
@@ -87,10 +90,28 @@ function Message({ emotion }) {
   useEffect(() => {
     if (!socket) return
 
-    socket.on("receiveMessage", (newMessage: Message) => {
-      setMessages(prevMessages => [...prevMessages, newMessage])
+    socket.on("receiveMessage", (newMessageInfo: Message) => {
+      const room = newMessageInfo.room;
+      const message = {  // Create the new message object
+        id: newMessageInfo.id,
+        sender: newMessageInfo.sender,
+        message: newMessageInfo.message,
+        emotion: newMessageInfo.emotion
+      };
+
+      // console.log('receive messages :>> ', message);
+      // Update the messages state for the corresponding room
+      addMessageToStorage(message,room)
+      // console.log('messages.lobby :>> ', messageStorage[currentRoom]);
     })
-  }, [socket]); // Empty dependency array to run the effect only once
+
+    socket.emit("fetchMessages", (messages: ServerStorage) => {
+      console.log('messages :>> ', messages);
+      setMessageStorage(messages)
+    })
+
+  }, [socket]);
+
 
 
   const sendMessage = (e) => {
@@ -104,24 +125,36 @@ function Message({ emotion }) {
 
     socket.emit('sendMessage', { message: messageInput, emotion });
 
-    //Display own message
+    // Display own message
     const newMessage = {
+      id:socket.id,
       sender: 'me',
       message: messageInput,
       emotion
     }
-    setMessages(prevMessages => [...prevMessages, newMessage])
+
+    addMessageToStorage(newMessage,currentRoom)
     setMessageInput('');
   };
+
+  function addMessageToStorage(newMessage:MessageStorage, room:string) {
+    setMessageStorage(prevMessages => ({
+      ...prevMessages,
+      [room]: {
+        messages: [...(prevMessages[room]?.messages || []), newMessage]
+      }
+    }));
+  }
 
   return (
     <div className='flex flex-col justify-between h-full'>
       <div className="">
-        {messages.map((messageObject, index) => {
-          const { sender, message, emotion } = messageObject;
+        {messageStorage[currentRoom]?.messages.map((messageObject, index) => {
+          const {id, sender, message, emotion } = messageObject;
+          const fromSelf = id === socket?.id
           return (
 
-            <div key={index} className={`mb-2 text-xl ${sender === 'me' && 'text-right'}`}>
+            <div key={index} className={`mb-2 text-xl ${fromSelf && 'text-right'}`}>
               {sender}: <span className={`${emotion} message`}>{message}</span>
             </div>
           );
