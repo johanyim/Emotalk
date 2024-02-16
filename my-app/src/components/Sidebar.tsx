@@ -60,10 +60,10 @@ function ShowOnlinePeople({currentRoom, setCurrentRoom}) {
             {rooms.map((rooms, index) => {
                 const name = rooms.name
                 const id = rooms.id
-                const isIn = id === currentRoom
+                const isSelected = id === currentRoom
                 console.log('currentRoom :>> ', currentRoom, id);
                 return (
-                    <button key={index} className={`p-8 ${isIn && 'bg-blue-200'}`} onClick={() => setCurrentRoom(id)}>
+                    <button key={index} className={`p-8 ${isSelected && 'bg-blue-200'}`} onClick={() => setCurrentRoom(id)}>
                         {name}
                     </button>
                 )

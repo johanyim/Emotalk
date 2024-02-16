@@ -5,7 +5,7 @@ import type { Socket as NetSocket } from "net"
 import type { NextApiRequest, NextApiResponse } from "next"
 import type { Server as IOServer, Socket } from "socket.io"
 import { Server } from "socket.io"
-import { MessageStorage, ServerStorage } from "../../types/storage"
+import { MessageStorage, ServerStorage, defaultRoom } from "../../types/storage"
 
 const PORT = 3000
 export const config = {
@@ -61,10 +61,10 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       console.log(`RECEIVED MESSAGE: Sender: ${from}, message: ${message}, emotion, ${emotion}, room, ${room}`);
 
       const payload = {
-        id: socket.id,
         message,
         emotion,
         sender: from,//remove later
+        senderId: socket.id,
       }
 
       //Also store in server
@@ -81,7 +81,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     socket.on('fetchMessages', (cb) => {
       const rooms = socket.rooms;
 
-      //Find messages in rooms joined
+      //Find in storage in rooms user joined
       let storage: ServerStorage = {};
       rooms.forEach(roomName => {
         const roomStorage = messageStorage[roomName] || [];
@@ -104,30 +104,22 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 //TODO Need to seperate this function out, propably not used later
 export function getCurrentRooms(socket: ISocket) {
 
-  const currentRooms = Array.from(socket.rooms);
-  //io.sockets.sockets return a map <id, socket>
+  // const currentRooms = Array.from(socket.rooms);
+
+  // Find current user online
+  // io.sockets.sockets return a map <id, socket>
   const socketEntries = Array.from(io.sockets.sockets.entries());
   const filteredSocketEntries = socketEntries.filter(([id, _]) => id !== socket.id); //Filter Self
 
   const roomInfo = filteredSocketEntries.map(([id, other_socket]) => {
     const roomId = generateRoomId(socket.id, id)
-    // IDK if this is good or bad!
-    socket.join(roomId)
-    other_socket.join(roomId)
+    if (messageStorage[roomId]) return null //indicate this room has been created already
 
     return {
       id: roomId,
       name: (other_socket as ISocket).username
     }
-  });
-
-  //Put lobby to be the first item
-  roomInfo.unshift(
-    {
-      id: 'lobby',
-      name: 'Lobby'
-    }
-  )
+  }).filter(room => room !== null) // Filter out null elements from the array;; 
 
   return roomInfo
 }
@@ -146,16 +138,16 @@ function generateRoomId(id1: string, id2: string) {
 
 const messageStorage: ServerStorage = {
   'lobby': {
-    messages: [],
+    ...defaultRoom,
     type: 'Group Chat',
-    name: 'Lobby'
+    name: 'Lobby',
   },
 }
 
 // Store new message in Server
 function storeMessage(room: string, payload: MessageStorage) {
   if (!messageStorage[room]) {
-    messageStorage[room] = { messages: [], type: 'Direct Message' };
+    messageStorage[room] = { ...defaultRoom };
   }
 
   messageStorage[room].messages.push(payload)
@@ -168,6 +160,6 @@ function createRoom(room: string, name: string) {
   const random_id = Math.floor(Math.random() * 100000000)
 
   if (!messageStorage[room]) {
-    messageStorage[random_id] = { messages: [], type: 'Group Chat', name: name };
+    messageStorage[random_id] = { ...defaultRoom, type: 'Group Chat', name: name };
   }
 }

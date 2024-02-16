@@ -51,7 +51,8 @@ function Main() {
     if (!socket) return
 
     socket.emit("fetchMessages", (messages: ServerStorage) => {
-      console.log('messages :>> ', messages);
+      //TODO LOW: instead of fetch all, Compare last update and most recent update 
+      // console.log('messages :>> ', messages);
       setStorage(messages)
     })
 
@@ -112,7 +113,7 @@ function Message({ currentRoom, emotion, storage, setStorage }) {
     socket.on("receiveMessage", (newMessageInfo: Message) => {
       const room = newMessageInfo.room;
       const message = {  // Create the new message object
-        id: newMessageInfo.id,
+        senderId: newMessageInfo.id,
         sender: newMessageInfo.sender,
         message: newMessageInfo.message,
         emotion: newMessageInfo.emotion
@@ -138,7 +139,7 @@ function Message({ currentRoom, emotion, storage, setStorage }) {
 
     // Display own message
     const newMessage = {
-      id: socket.id,
+      senderId: socket.id,
       sender: 'me',
       message: messageInput,
       emotion
@@ -162,8 +163,8 @@ function Message({ currentRoom, emotion, storage, setStorage }) {
     <div className='flex flex-col justify-between h-full'>
       <div className="">
         {storage[currentRoom]?.messages?.map((messageObject:MessageStorage, index:number) => {
-          const { id, sender, message, emotion } = messageObject;
-          const fromSelf = id === socket?.id
+          const { senderId, sender, message, emotion } = messageObject;
+          const fromSelf = senderId === socket?.id
           return (
 
             <div key={index} className={`mb-2 text-xl ${fromSelf && 'text-right'}`}>
