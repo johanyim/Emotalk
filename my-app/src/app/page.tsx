@@ -11,14 +11,7 @@ import './emotions.css'
 import Sidebar from '@/components/Sidebar';
 import { SocketProvider, useSocket } from '@/components/SocketContext';
 import { MessageStorage, ServerStorage } from '../../types/storage';
-
-interface Message {
-  id: string
-  sender: string;
-  message: string;
-  emotion: string;
-  room: string;
-}
+import { Chat } from '@/components/Chat';
 
 interface UserInfo {
   name: string
@@ -51,9 +44,11 @@ function Main() {
     if (!socket) return
 
     socket.emit("fetchMessages", (messages: ServerStorage) => {
-      //TODO LOW: instead of fetch all, Compare last update and most recent update 
-      // console.log('messages :>> ', messages);
-      setStorage(messages)
+      // setStorage(messages)
+      setStorage((prevStorage) => ({
+        ...messages,
+        ...prevStorage
+      }));
     })
 
   }, [socket]);
@@ -82,10 +77,10 @@ function Main() {
 
   return (
     <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} />
+      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage} />
       <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
-        <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage}/>
-        <Message currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage}/>
+        <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage} currentRoom={currentRoom} />
+        <Chat currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage} />
 
 
         <div className=" ">
@@ -100,121 +95,30 @@ function Main() {
   );
 }
 
-
-function Message({ currentRoom, emotion, storage, setStorage }) {
-  const [messageInput, setMessageInput] = useState('');
-
-  const socket = useSocket();
-
-  useEffect(() => {
-    if (!socket) return
-
-
-    socket.on("receiveMessage", (newMessageInfo: Message) => {
-      const room = newMessageInfo.room;
-      const message = {  // Create the new message object
-        senderId: newMessageInfo.id,
-        sender: newMessageInfo.sender,
-        message: newMessageInfo.message,
-        emotion: newMessageInfo.emotion
-      };
-
-      console.log('receive messages :>> ', message, room);
-      addMessageToStorage(message, room)
-      // console.log('messages.lobby :>> ', messageStorage[currentRoom]);
-    })
-
-  }, [socket]);
-
-  const sendMessage = (e) => {
-    e.preventDefault();
-    // Send message warning
-    if (messageInput.trim() === '' || !socket) return
-    if (emotion === "neutral") {
-      window.alert("Sorry, I don't know how you feel about that.")
-      return
-    }
-
-    socket.emit('sendMessage', { message: messageInput, emotion, room: currentRoom });
-
-    // Display own message
-    const newMessage = {
-      senderId: socket.id,
-      sender: 'me',
-      message: messageInput,
-      emotion
-    }
-
-    addMessageToStorage(newMessage, currentRoom)
-    setMessageInput('');
-  };
-
-  function addMessageToStorage(newMessage: MessageStorage, room: string) {
-    setStorage((prevStorage:ServerStorage) => ({
-      ...prevStorage,
-      [room]: {
-        ...prevStorage[room],
-        messages: [...(prevStorage[room]?.messages || []), newMessage]
-      }
-    }));
-  }
-
-  return (
-    <div className='flex flex-col justify-between h-full'>
-      <div className="">
-        {storage[currentRoom]?.messages?.map((messageObject:MessageStorage, index:number) => {
-          const { senderId, sender, message, emotion } = messageObject;
-          const fromSelf = senderId === socket?.id
-          return (
-
-            <div key={index} className={`mb-2 text-xl ${fromSelf && 'text-right'}`}>
-              {sender}: <span className={`${emotion} message`}>{message}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      <form className="flex gap-4 ">
-        <input
-          type="text"
-          value={messageInput}
-          onChange={(e) => setMessageInput(e.target.value)}
-          className={`${emotion} border border-gray-300 p-2 rounded-lg mr-2 w-full`}
-        />
-        <button
-          onClick={sendMessage}
-          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-        >
-          Send
-        </button>
-      </form>
-    </div>
-  )
-}
-
 interface HeaderProps {
   userInfo: UserInfo;
   setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
   storage: ServerStorage
+  currentRoom:string //roomid
 }
 
-function Header({ userInfo, setUserInfo, storage }: HeaderProps) {
+function Header({ userInfo, setUserInfo, storage, currentRoom }: HeaderProps) {
   const socket = useSocket();
 
   //Socket Effect
   useEffect(() => {
     if (!socket) return
-    socket.on("setName", (name: string) => {
-      setUserInfo(prevUserInfo => ({
-        ...prevUserInfo,
-        name: name,
-      }));
-    })
-  }, [socket]); // Empty dependency array to run the effect only once
+  socket.on("setName", (name: string) => {
+    setUserInfo(prevUserInfo => ({
+      ...prevUserInfo,
+      name: name,
+    }));
+  });
+  }, [socket]); 
 
   return (
     <div className="flex justify-between ">
-      <h1 className="text-2xl font-bold mb-4">Emotalk</h1>
+      <h1 className="text-2xl font-bold mb-4">{storage[currentRoom]?.name ||'Emotalk'}</h1>
       <span>{userInfo?.name}</span>
     </div>
   )
