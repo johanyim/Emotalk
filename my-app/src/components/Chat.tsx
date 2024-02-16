@@ -43,7 +43,7 @@ export function Chat({ currentRoom, emotion, storage, setStorage }: MessageProps
 
     }, [socket]);
 
-    const sendMessage = (e:React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const sendMessage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         // Send message warning
         if (messageInput.trim() === '' || !socket) return
@@ -67,11 +67,16 @@ export function Chat({ currentRoom, emotion, storage, setStorage }: MessageProps
     };
 
     function addMessageToStorage(newMessage: MessageStorage, room: string) {
+        // function getMembersinDM(roomId: string) {
+        //     //socket io id has length 20
+        //     return [roomId.substring(0, 20), roomId.substring(20)]
+        // }
         setStorage((prevStorage) => ({
             ...prevStorage,
             [room]: {
                 ...prevStorage[room],
-                messages: [...(prevStorage[room]?.messages || []), newMessage]
+                messages: [...(prevStorage[room]?.messages || []), newMessage],
+                // members: getMembersinDM(room)
             }
         }));
     }

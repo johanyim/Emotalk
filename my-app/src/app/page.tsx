@@ -21,7 +21,6 @@ const defaultUser = {
   name: ''
 }
 
-export let socket: Socket | null = null;
 
 export default function Home() {
   return (
@@ -44,11 +43,8 @@ function Main() {
     if (!socket) return
 
     socket.emit("fetchMessages", (messages: ServerStorage) => {
-      // setStorage(messages)
-      setStorage((prevStorage) => ({
-        ...messages,
-        ...prevStorage
-      }));
+      console.log('fetch messages :>> ', messages);
+      setStorage(messages);
     })
 
   }, [socket]);
@@ -77,7 +73,7 @@ function Main() {
 
   return (
     <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage} />
+      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage}/>
       <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
         <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage} currentRoom={currentRoom} />
         <Chat currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage} />
@@ -116,9 +112,11 @@ function Header({ userInfo, setUserInfo, storage, currentRoom }: HeaderProps) {
   });
   }, [socket]); 
 
+
+
   return (
     <div className="flex justify-between ">
-      <h1 className="text-2xl font-bold mb-4">{storage[currentRoom]?.name ||'Emotalk'}</h1>
+      <h1 className="text-2xl font-bold mb-4">{storage[currentRoom]?.name|| storage[currentRoom]?.members?.join(',') ||'Emotalk'}</h1>
       <span>{userInfo?.name}</span>
     </div>
   )

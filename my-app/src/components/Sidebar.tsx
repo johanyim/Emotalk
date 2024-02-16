@@ -7,13 +7,13 @@ import { ServerStorage } from '../../types/storage';
 interface SidebarProps extends RoomsProps {
 }
 
-export default function Sidebar({ currentRoom, setCurrentRoom, storage, setStorage }:SidebarProps) {
+export default function Sidebar({ currentRoom, setCurrentRoom, storage, setStorage }: SidebarProps) {
     return (
         <div className='min-w-[300px]'>
             <div className='flex flex-col gap-8'>
 
                 <Header />
-                <Rooms currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage} />
+                <Rooms currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage}/>
             </div>
         </div >
     );
@@ -27,7 +27,6 @@ function Header() {
     )
 }
 
-
 interface RoomsProps {
     currentRoom: string,
     setCurrentRoom: Dispatch<SetStateAction<string>>;
@@ -38,15 +37,12 @@ interface RoomsProps {
 const updateRoomTime = 10 * 1000
 
 function Rooms({ currentRoom, setCurrentRoom, storage, setStorage }: RoomsProps) {
-    // const [rooms, setRooms] = useState<roomInfo[]>([])
+    const [tempRooms, setTempRooms] = useState<ServerStorage>({})
     const socket = useSocket();
 
     useEffect(() => {
         function addRoomsToStorage(rooms: ServerStorage) {
-            setStorage((prevStorage) => ({
-                ...prevStorage,
-                ...rooms
-            }));
+            setTempRooms(rooms);
         }
 
         const fetchOnlineUsers = () => {
@@ -71,11 +67,33 @@ function Rooms({ currentRoom, setCurrentRoom, storage, setStorage }: RoomsProps)
 
     }, [socket]);
 
+    console.log('tempRooms :>> ', tempRooms);
+
 
     return (
+        <div className='flex flex-col gap-8'>
+            <h2>Your rooms</h2>
+            <ChatList list={storage} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom}></ChatList>
+
+            <h2>Other Online Users</h2>
+            <ChatList list={tempRooms} currentRoom={currentRoom} setCurrentRoom={setCurrentRoom}></ChatList>
+        </div>
+    )
+}
+
+
+interface ChatListProps {
+    list: ServerStorage
+    currentRoom: string,
+    setCurrentRoom: Dispatch<SetStateAction<string>>;
+
+}
+
+function ChatList({ list, currentRoom, setCurrentRoom }: ChatListProps) {
+    return (
         <div className='flex flex-col'>
-            {Object.entries(storage).map(([roomId, roomStorage], index) => {
-                const name = roomStorage?.name 
+            {Object.entries(list).map(([roomId, roomStorage], index) => {
+                const name = roomStorage?.name || 'Known bug' //Known bug
                 const isSelected = roomId === currentRoom
 
                 return (

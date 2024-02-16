@@ -84,8 +84,8 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       //Find in storage in rooms user joined
       let storage: ServerStorage = {};
       rooms.forEach(roomName => {
-        const roomStorage = messageStorage[roomName] || [];
-        if (roomName === socket.id) return
+        const roomStorage = messageStorage[roomName] || null;
+        if (roomName === socket.id || !roomStorage) return
         storage[roomName] = roomStorage
       });
 
@@ -142,6 +142,11 @@ function generateRoomId(id1: string, id2: string) {
   return id;
 }
 
+function getMembersinDM(roomId:string){
+  //socket io id has length 20
+  return [roomId.substring(0, 20),roomId.substring(20) ]
+}
+
 const messageStorage: ServerStorage = {
   'lobby': {
     ...defaultRoom,
@@ -154,10 +159,12 @@ const messageStorage: ServerStorage = {
 // Store new message in Server
 function storeMessage(room: string, payload: MessageStorage) {
   if (!messageStorage[room]) {
-    messageStorage[room] = { ...defaultRoom, messages:[] };
+    const members = getMembersinDM(room)
+    messageStorage[room] = { ...defaultRoom, messages:[], members };
   }
-
+  
   messageStorage[room].messages.push({...payload})
+  console.log('messageStorage :>> ', messageStorage);
 }
 
 //Create Group Chat

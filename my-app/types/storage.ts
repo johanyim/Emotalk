@@ -12,7 +12,7 @@ export interface RoomStorage {
     messages: MessageStorage[]
     type:roomType
     name?:string
-    // members: string[]
+    members?: string[]
     // members: User[]
     lastModified?: Date
 }
