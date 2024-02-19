@@ -49,7 +49,7 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
 
     //Set name
     socket.username = getRandomName()
-    socket.emit("setName", socket.username)
+
 
     //Server receive message
     socket.on('sendMessage', ({ message, emotion, room = 'lobby' }) => {
@@ -72,8 +72,10 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       socket.to(room).emit('receiveMessage', { ...payload, sender: from, room });
     });
 
+
+
     //Get all current rooms for the current socket
-    socket.on('getOnlineUsers', (cb) => {
+    socket.on('fetchOnlineRooms', (cb) => {
       const rooms = getOnlineRooms(socket)
       cb(rooms)
     });
@@ -92,9 +94,22 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       cb(storage)
     });
 
-    socket.on('fetchRoomInfo', ({roomId},cb) => {
-      const roomStorage = messageStorage[roomId] 
+    socket.on('fetchRoomInfo', ({ roomId }, cb) => {
+      const roomStorage = messageStorage[roomId]
       cb(roomStorage)
+    });
+
+    socket.on("fetchUserInfo", (cb) => {
+      const userInfo = { id: socket.id, username: socket.username }
+      cb(userInfo)
+    })
+
+    socket.on('fetchAllUserInfo', (cb) => {
+      const userInfoList = Array.from(io.sockets.sockets.values()).map((socket: ISocket) => ({
+        userId: socket.id,
+        username: socket.username,
+      }));
+      cb(userInfoList)
     });
 
     //Socket disconnects
@@ -126,12 +141,12 @@ export function getOnlineRooms(socket: ISocket) {
     if (!messageStorage[roomId]) {
       roomInfo[roomId] = {
         ...defaultRoom,
-        messages:[],
+        messages: [],
         name: (other_socket as ISocket).username
       };
     }
   }
-  
+
   return roomInfo
 }
 
@@ -147,9 +162,9 @@ function generateRoomId(id1: string, id2: string) {
   return id;
 }
 
-function getMembersinDM(roomId:string){
+function getMembersinDM(roomId: string) {
   //socket io id has length 20
-  return [roomId.substring(0, 20),roomId.substring(20) ]
+  return [roomId.substring(0, 20), roomId.substring(20)]
 }
 
 const messageStorage: ServerStorage = {
@@ -157,7 +172,7 @@ const messageStorage: ServerStorage = {
     ...defaultRoom,
     type: 'Group Chat',
     name: 'Lobby',
-    messages:[]
+    messages: []
   },
 }
 
@@ -165,10 +180,10 @@ const messageStorage: ServerStorage = {
 function storeMessage(room: string, payload: MessageStorage) {
   if (!messageStorage[room]) {
     const members = getMembersinDM(room)
-    messageStorage[room] = { ...defaultRoom, messages:[], members };
+    messageStorage[room] = { ...defaultRoom, messages: [], members };
   }
-  
-  messageStorage[room].messages.push({...payload})
+
+  messageStorage[room].messages.push({ ...payload })
   console.log('messageStorage :>> ', messageStorage);
 }
 
@@ -179,6 +194,6 @@ function createRoom(room: string, name: string) {
   const random_id = Math.floor(Math.random() * 100000000)
 
   if (!messageStorage[room]) {
-    messageStorage[random_id] = { ...defaultRoom, type: 'Group Chat', name: name, messages:[] };
+    messageStorage[random_id] = { ...defaultRoom, type: 'Group Chat', name: name, messages: [] };
   }
 }

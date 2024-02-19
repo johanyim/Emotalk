@@ -11,11 +11,13 @@ import { MessageStorage, ServerStorage } from '../../types/storage';
 import { Chat } from '@/components/Chat';
 
 interface UserInfo {
-  name: string
+  id: string
+  username: string
 }
 
 const defaultUser = {
-  name: ''
+  id: '',
+  username: ''
 }
 
 
@@ -29,6 +31,7 @@ export default function Home() {
 
 function Main() {
   const [userInfo, setUserInfo] = useState<UserInfo>(defaultUser);
+  const [onlineUserInfo, setOnlineUserInfo] = useState<UserInfo[]>([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [emotion, setEmotion] = useState('O_O');
 
@@ -43,6 +46,15 @@ function Main() {
       console.log('fetch messages :>> ', messages);
       setStorage(messages);
     })
+
+    socket.emit("fetchUserInfo", (userInfo: UserInfo) => {
+      setUserInfo(userInfo);
+    });
+
+    socket.emit("fetchAllUserInfo", (userInfos: UserInfo[]) => {
+      setOnlineUserInfo(userInfos);
+      console.log('userInfos :>> ', userInfos);
+    });
 
   }, [socket]);
 
@@ -70,7 +82,7 @@ function Main() {
 
   return (
     <div className=' max-w-5xl  mx-auto p-6 rounded-lg shadow-md h-screen flex justify-between'>
-      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage}/>
+      <Sidebar currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage} />
       <div className="flex flex-col  justify-between p-6 bg-gray-100 rounded-lg shadow-md w-[60%]">
         <Header userInfo={userInfo} setUserInfo={setUserInfo} storage={storage} currentRoom={currentRoom} />
         <Chat currentRoom={currentRoom} emotion={emotion} storage={storage} setStorage={setStorage} />
@@ -92,29 +104,15 @@ interface HeaderProps {
   userInfo: UserInfo;
   setUserInfo: React.Dispatch<React.SetStateAction<UserInfo>>;
   storage: ServerStorage
-  currentRoom:string //roomid
+  currentRoom: string //roomid
 }
 
 function Header({ userInfo, setUserInfo, storage, currentRoom }: HeaderProps) {
-  const socket = useSocket();
-
-  //Socket Effect
-  useEffect(() => {
-    if (!socket) return
-  socket.on("setName", (name: string) => {
-    setUserInfo(prevUserInfo => ({
-      ...prevUserInfo,
-      name: name,
-    }));
-  });
-  }, [socket]); 
-
-
 
   return (
     <div className="flex justify-between ">
-      <h1 className="text-2xl font-bold mb-4">{storage[currentRoom]?.name|| storage[currentRoom]?.members?.join(',') ||'Emotalk'}</h1>
-      <span>{userInfo?.name}</span>
+      <h1 className="text-2xl font-bold mb-4">{storage[currentRoom]?.name || storage[currentRoom]?.members?.join(',') || 'Emotalk'}</h1>
+      <span>{userInfo?.username}</span>
     </div>
   )
 }

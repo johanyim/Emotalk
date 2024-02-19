@@ -47,7 +47,7 @@ function Rooms({ currentRoom, setCurrentRoom, storage, setStorage }: RoomsProps)
 
         const fetchOnlineUsers = () => {
             if (!socket) return
-            socket.emit('getOnlineUsers', (newRoomStorage: ServerStorage) => {
+            socket.emit('fetchOnlineRooms', (newRoomStorage: ServerStorage) => {
                 addRoomsToStorage(newRoomStorage)
             })
         }
