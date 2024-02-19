@@ -1,19 +1,20 @@
 "use client"; // This is a client component 👈🏽
 
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { useSocket } from './SocketContext';
+import { useSocket } from './SocketProvider';
 import { ServerStorage } from '../../types/storage';
+import { useOnlineUserInfo, useStorage } from './StorageProvider';
 
 interface SidebarProps extends RoomsProps {
 }
 
-export default function Sidebar({ currentRoom, setCurrentRoom, storage, setStorage }: SidebarProps) {
+export default function Sidebar({ currentRoom, setCurrentRoom }: SidebarProps) {
     return (
         <div className='min-w-[300px]'>
             <div className='flex flex-col gap-8'>
 
                 <Header />
-                <Rooms currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} storage={storage} setStorage={setStorage}/>
+                <Rooms currentRoom={currentRoom} setCurrentRoom={setCurrentRoom} />
             </div>
         </div >
     );
@@ -30,15 +31,14 @@ function Header() {
 interface RoomsProps {
     currentRoom: string,
     setCurrentRoom: Dispatch<SetStateAction<string>>;
-    storage: ServerStorage
-    setStorage: Dispatch<SetStateAction<ServerStorage>>
 }
 //every 10s
 const updateRoomTime = 10 * 1000
 
-function Rooms({ currentRoom, setCurrentRoom, storage, setStorage }: RoomsProps) {
+function Rooms({ currentRoom, setCurrentRoom }: RoomsProps) {
     const [tempRooms, setTempRooms] = useState<ServerStorage>({})
     const socket = useSocket();
+    const { storage } = useStorage()
 
     useEffect(() => {
         function addRoomsToStorage(rooms: ServerStorage) {
@@ -87,10 +87,13 @@ interface ChatListProps {
 }
 
 function ChatList({ list, currentRoom, setCurrentRoom }: ChatListProps) {
+    const onlineUserInfo = useOnlineUserInfo()
+
     return (
         <div className='flex flex-col'>
             {Object.entries(list).map(([roomId, roomStorage], index) => {
-                const name = roomStorage?.name || roomStorage?.members?.join(',') ||'BUG'
+                const name = roomStorage?.name || roomStorage?.members?.map(memberId => onlineUserInfo[memberId]).join(',') || 'BUG'
+
                 const isSelected = roomId === currentRoom
 
                 return (

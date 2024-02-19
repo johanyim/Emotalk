@@ -105,11 +105,13 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
     })
 
     socket.on('fetchAllUserInfo', (cb) => {
-      const userInfoList = Array.from(io.sockets.sockets.values()).map((socket: ISocket) => ({
-        userId: socket.id,
-        username: socket.username,
-      }));
-      cb(userInfoList)
+      const usersInfo: Record<string,string|undefined> = {};
+      
+      Array.from(io.sockets.sockets.values()).forEach((socket:ISocket) => {
+        usersInfo[socket.id] = socket.username;
+      });
+      console.log('userInfoList :>> ', usersInfo);
+      cb(usersInfo)
     });
 
     //Socket disconnects

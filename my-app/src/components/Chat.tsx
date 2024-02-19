@@ -1,6 +1,7 @@
 import { useState, useEffect, ChangeEvent } from "react";
 import { ServerStorage, MessageStorage, RoomStorage } from "../../types/storage";
-import { useSocket } from "./SocketContext";
+import { useSocket } from "./SocketProvider";
+import { useStorage } from "./StorageProvider";
 
 interface Message {
     id: string
@@ -13,13 +14,12 @@ interface Message {
 interface MessageProps {
     currentRoom: string //roomid
     emotion: string;
-    storage: ServerStorage
-    setStorage: React.Dispatch<React.SetStateAction<ServerStorage>>;
 }
 
 
-export function Chat({ currentRoom, emotion, storage, setStorage }: MessageProps) {
+export function Chat({ currentRoom, emotion }: MessageProps) {
     const [messageInput, setMessageInput] = useState('');
+    const { storage, setStorage } = useStorage()
 
     const socket = useSocket();
 
@@ -70,7 +70,7 @@ export function Chat({ currentRoom, emotion, storage, setStorage }: MessageProps
         //Get room info first if this the first message
         if (!storage[room]) {
             if (!socket) return
-            socket.emit('fetchRoomInfo', { roomId: room }, (roomInfo:RoomStorage) => {
+            socket.emit('fetchRoomInfo', { roomId: room }, (roomInfo: RoomStorage) => {
                 setStorage((prevStorage) => ({
                     ...prevStorage,
                     [room]: roomInfo
