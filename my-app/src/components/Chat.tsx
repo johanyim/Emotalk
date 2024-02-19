@@ -1,5 +1,5 @@
 import { useState, useEffect, ChangeEvent } from "react";
-import { ServerStorage, MessageStorage } from "../../types/storage";
+import { ServerStorage, MessageStorage, RoomStorage } from "../../types/storage";
 import { useSocket } from "./SocketContext";
 
 interface Message {
@@ -67,22 +67,27 @@ export function Chat({ currentRoom, emotion, storage, setStorage }: MessageProps
     };
 
     function addMessageToStorage(newMessage: MessageStorage, room: string) {
-        // function getMembersinDM(roomId: string) {
-        //     //socket io id has length 20
-        //     return [roomId.substring(0, 20), roomId.substring(20)]
-        // }
-        setStorage((prevStorage) => ({
-            ...prevStorage,
-            [room]: {
-                ...prevStorage[room],
-                messages: [...(prevStorage[room]?.messages || []), newMessage],
-                // members: getMembersinDM(room)
-            }
-        }));
+        //Get room info first if this the first message
+        if (!storage[room]) {
+            if (!socket) return
+            socket.emit('fetchRoomInfo', { roomId: room }, (roomInfo:RoomStorage) => {
+                setStorage((prevStorage) => ({
+                    ...prevStorage,
+                    [room]: roomInfo
+                }));
+                console.log('roomInfo :>> ', roomInfo);
+            });
+
+        } else {
+            setStorage((prevStorage) => ({
+                ...prevStorage,
+                [room]: {
+                    ...prevStorage[room],
+                    messages: [...prevStorage[room].messages, newMessage],
+                }
+            }));
+        }
     }
-
-    console.log('storage :>> ', storage);
-
 
     return (
         <div className='flex flex-col justify-between h-full'>

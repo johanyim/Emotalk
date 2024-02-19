@@ -92,6 +92,11 @@ export default function SocketHandler(_req: NextApiRequest, res: NextApiResponse
       cb(storage)
     });
 
+    socket.on('fetchRoomInfo', ({roomId},cb) => {
+      const roomStorage = messageStorage[roomId] 
+      cb(roomStorage)
+    });
+
     //Socket disconnects
     socket.on("disconnect", async () => {
       console.log("socket disconnect")

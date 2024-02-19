@@ -67,9 +67,6 @@ function Rooms({ currentRoom, setCurrentRoom, storage, setStorage }: RoomsProps)
 
     }, [socket]);
 
-    console.log('tempRooms :>> ', tempRooms);
-
-
     return (
         <div className='flex flex-col gap-8'>
             <h2>Your rooms</h2>
@@ -93,7 +90,7 @@ function ChatList({ list, currentRoom, setCurrentRoom }: ChatListProps) {
     return (
         <div className='flex flex-col'>
             {Object.entries(list).map(([roomId, roomStorage], index) => {
-                const name = roomStorage?.name || 'Known bug' //Known bug
+                const name = roomStorage?.name || roomStorage?.members?.join(',') ||'BUG'
                 const isSelected = roomId === currentRoom
 
                 return (
